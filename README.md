@@ -35,3 +35,35 @@
     2. 合并前确保自己的模块可以独立运行(UI可以用mock数据调用backend接口)
     3. develop分支功能整合完成后，测试无误由管理员合并到main分支
     4. 每次开发前先git pull origin develop，避免冲突
+6. 初始化操作指引(以feature/db为例，具体每个人请切换到自己的分支)
+   ```markdown
+
+    git clone https://github.com/john2-ui/FlightSystem.git
+    cd FlightSystem
+    git checkout feature/db
+    git pull origin develop
+
+   ```
+7. 每次修改代码前(以feature/db为例，具体每个人请切换到自己的分支)
+    ```markdown
+
+    git checkout feature/db
+    git pull origin develop
+    git merge develop
+
+    ```
+8. 中途修改自己负责分支的代码请git commit -m"message"以及git push origin feature/db推送到远程分支
+9. 功能开发完成后合并到develop(在git merge feature/db出如果发生冲突，自己解决)
+    ```markdown
+
+    git checkout develop
+    git pull origin develop
+    git merge feature/db
+    git push origin develop
+
+    ```
+10. 查看当前git状态命令提示
+    1.  git branch -a(查看所有本地/远程分支)
+    2.  git branch(查看当前分支)
+    3.  git log --oneline --graph(查看提交历史)
+   
