@@ -1,7 +1,8 @@
 QT += core gui widgets
-CONFIG += c++17 staticlib
-TEMPLATE = lib
+CONFIG += c++17
+TEMPLATE = app
+TARGET = ui_client
 
 SOURCES += dummy.cpp
 HEADERS += dummy.h
-INCLUDEPATH += $$PWD
+# FORMS += xxx.ui
