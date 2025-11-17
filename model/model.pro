@@ -7,5 +7,8 @@ DESTDIR = $$PWD/../build/lib
 
 INCLUDEPATH += $$PWD
 
-SOURCES += model.cpp
-HEADERS += model.h
+HEADERS += Airplane.h \
+    Airport.h \
+    City.h \
+    Flight.h \
+    Ticket.h

@@ -11,11 +11,16 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     app \
+    dao_impl \
     db \
     backend \
     model \
     ui_client \
-    ui_admin
+    ui_admin    \
+    dao
+
+# 配置文件
+DISTFILES += config/db.ini
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
