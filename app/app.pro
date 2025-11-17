@@ -8,4 +8,4 @@ FORMS += mainwindow.ui
 
 INCLUDEPATH += $$PWD/../db
 
-LIBS += -L$$PWD/../build/lib -ldb -lbackend -lmodel
+LIBS += -L$$PWD/../build/lib -ldb -lbackend -lmodel -lui_admin -lui_client
