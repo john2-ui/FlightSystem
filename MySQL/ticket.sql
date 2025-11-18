@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS ticket (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 示例数据（可删）
-INSERT INTO ticket (flight_id, class, price, total_seats, remain_seats) VALUES
-(1, 'economy', 899.00, 150, 120),
-(1, 'business', 1999.00, 20, 15),
-(2, 'economy', 750.50, 160, 140);
+-- INSERT INTO ticket (flight_id, class, price, total_seats, remain_seats) VALUES
+-- (1, 'economy', 899.00, 150, 120),
+-- (1, 'business', 1999.00, 20, 15),
+-- (2, 'economy', 750.50, 160, 140);

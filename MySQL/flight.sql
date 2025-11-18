@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS flight (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 示例数据（可删）
-INSERT INTO flight (flight_no, airplane_id, depart_airport_id, arrive_airport_id, depart_time, arrive_time, status)
-VALUES
-('CZ3101', 1, 1, 2, '2025-03-01 08:00:00', '2025-03-01 10:30:00', 'normal'),
-('MU5123', 2, 2, 3, '2025-03-01 12:00:00', '2025-03-01 14:20:00', 'delayed');
+-- INSERT INTO flight (flight_no, airplane_id, depart_airport_id, arrive_airport_id, depart_time, arrive_time, status)
+-- VALUES
+-- ('CZ3101', 1, 1, 2, '2025-03-01 08:00:00', '2025-03-01 10:30:00', 'normal'),
+-- ('MU5123', 2, 2, 3, '2025-03-01 12:00:00', '2025-03-01 14:20:00', 'delayed');

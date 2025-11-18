@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS city (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 示例数据（可删）
-INSERT INTO city (name, code, country) VALUES
-('广州', 'GZ', '中国'),
-('北京', 'BJ', '中国'),
-('上海', 'SH', '中国');
+-- INSERT INTO city (name, code, country) VALUES
+-- ('广州', 'GZ', '中国'),
+-- ('北京', 'BJ', '中国'),
+-- ('上海', 'SH', '中国');

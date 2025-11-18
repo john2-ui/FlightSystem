@@ -7,7 +7,7 @@ CONFIG += c++17
 
 DESTDIR = $$PWD/../build/lib
 
-INCLUDEPATH += $$PWD ../dao ../db ../model
+INCLUDEPATH += $$PWD  ../db ../model ../dao
 
 SOURCES += \
     flight_dao_impl.cpp \
@@ -22,3 +22,5 @@ HEADERS += \
     airport_dao_impl.h \
     city_dao_impl.h \
     ticket_dao_impl.h
+
+LIBS += -L$$PWD/../build/lib -ldb

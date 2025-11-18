@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS airplane (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 示例数据（可删）
-INSERT INTO airplane (model, seats_economy, seats_business, seats_first) VALUES
-('A320', 150, 20, 10),
-('B737', 160, 18, 8),
-('A350', 260, 36, 20);
+-- INSERT INTO airplane (model, seats_economy, seats_business, seats_first) VALUES
+-- ('A320', 150, 20, 10),
+-- ('B737', 160, 18, 8),
+-- ('A350', 260, 36, 20);

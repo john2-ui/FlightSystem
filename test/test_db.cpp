@@ -19,20 +19,6 @@ int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
-    // 连接数据库
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
-    db.setUserName("root");
-    db.setPassword("491122");
-    db.setDatabaseName("FlightSystem");
-
-    if (!db.open()) {
-        qDebug() << "Failed to connect MySQL:" << db.lastError();
-        return -1;
-    }
-    qDebug() << "MySQL Connected";
-
-
     // 初始化 DAO
     CityDaoImpl cityDao;
     AirportDaoImpl airportDao;
@@ -40,189 +26,130 @@ int main(int argc, char *argv[])
     FlightDaoImpl flightDao;
     TicketDaoImpl ticketDao;
 
+    qDebug() << "===== START CRUD TEST =====";
 
     // ============================
-    // 1. Test City
+    // 1. Insert City
     // ============================
-    qDebug() << "\n===== Test CityDao =====";
-
     City gz;
     gz.setName("广州");
     gz.setCode("GZ");
     gz.setCountry("中国");
-
     int cityId = cityDao.insert(gz);
     qDebug() << "Inserted city id =" << cityId;
 
-    City city1 = cityDao.getById(cityId);
-    qDebug() << "Query city name:" << city1.name();
+    // Query
+    City city = cityDao.getById(cityId);
+    qDebug() << "Query city:" << city.name();
 
     // Update
-    city1.setName("广州Updated");
-    cityDao.update(city1);
-
-    City city2 = cityDao.getById(cityId);
-    qDebug() << "Updated city name:" << city2.name();
-
-    // Get all
-    auto cities = cityDao.getAll();
-    qDebug() << "City count =" << cities.size();
-
-    // Delete
-    cityDao.remove(cityId);
-    qDebug() << "City removed. Exists?" << (cityDao.getById(cityId).id() != 0);
-
-
+    city.setName("广州Updated");
+    cityDao.update(city);
+    qDebug() << "Updated city name:" << cityDao.getById(cityId).name();
 
     // ============================
-    // 2. Test Airport
+    // 2. Insert Airport
     // ============================
-    qDebug() << "\n===== Test AirportDao =====";
-
     Airport ap;
     ap.setName("白云机场");
     ap.setCode("CAN");
-    ap.setCityId(cityId);   // 注意：上面 cityId 被删了，此处最好重新插入 city
+    ap.setCityId(cityId);
     ap.setTerminalCount(2);
-
-    int newCityId = cityDao.insert(gz);
-    ap.setCityId(newCityId);
-
     int airportId = airportDao.insert(ap);
+    qDebug() << "Inserted airport id =" << airportId;
 
-    Airport ap1 = airportDao.getById(airportId);
-    qDebug() << "Airport name:" << ap1.name();
+    Airport airport = airportDao.getById(airportId);
+    qDebug() << "Query airport:" << airport.name();
 
-    // Update
-    ap1.setName("白云机场Updated");
-    airportDao.update(ap1);
-
-    Airport ap2 = airportDao.getById(airportId);
-    qDebug() << "Updated airport name:" << ap2.name();
-
-    // Get all
-    auto airports = airportDao.getAll();
-    qDebug() << "Airport count =" << airports.size();
-
-    // Delete
-    airportDao.remove(airportId);
-    qDebug() << "Airport removed. Exists?" << (airportDao.getById(airportId).id() != 0);
-
-
+    airport.setName("白云机场Updated");
+    airportDao.update(airport);
+    qDebug() << "Updated airport name:" << airportDao.getById(airportId).name();
 
     // ============================
-    // 3. Test Airplane
+    // 3. Insert Airplane
     // ============================
-    qDebug() << "\n===== Test AirplaneDao =====";
+    Airplane plane;
+    plane.setModel("A320");
+    plane.setSeatsEconomy(150);
+    plane.setSeatsBusiness(20);
+    plane.setSeatsFirst(10);
+    int airplaneId = airplaneDao.insert(plane);
+    qDebug() << "Inserted airplane id =" << airplaneId;
 
-    Airplane a320;
-    a320.setModel("A320");
-    a320.setSeatsEconomy(150);
-    a320.setSeatsBusiness(20);
-    a320.setSeatsFirst(10);
+    Airplane a = airplaneDao.getById(airplaneId);
+    qDebug() << "Query airplane model:" << a.model();
 
-    int airplaneId = airplaneDao.insert(a320);
-
-    Airplane a1 = airplaneDao.getById(airplaneId);
-    qDebug() << "Airplane model:" << a1.model();
-
-    // Update
-    a1.setModel("A320-Updated");
-    airplaneDao.update(a1);
-
-    Airplane a2 = airplaneDao.getById(airplaneId);
-    qDebug() << "Updated model:" << a2.model();
-
-    // Get all
-    auto planes = airplaneDao.getAll();
-    qDebug() << "Airplane count =" << planes.size();
-
-    // Delete
-    airplaneDao.remove(airplaneId);
-    qDebug() << "Airplane removed. Exists?" << (airplaneDao.getById(airplaneId).id() != 0);
-
-
+    a.setModel("A320-Updated");
+    airplaneDao.update(a);
+    qDebug() << "Updated airplane model:" << airplaneDao.getById(airplaneId).model();
 
     // ============================
-    // 4. Test Flight
+    // 4. Insert Flight
     // ============================
-    qDebug() << "\n===== Test FlightDao =====";
-
-    // 插入Flight需要 airportId 和 airplaneId，因此重新插入
-    int cityX = cityDao.insert(gz);
-    ap.setCityId(cityX);
-    int airportX = airportDao.insert(ap);
-    a320.setModel("A320");
-    int airplaneX = airplaneDao.insert(a320);
-
     Flight fl;
     fl.setFlightNo("CZ3101");
-    fl.setAirplaneId(airplaneX);
-    fl.setDepartAirportId(airportX);
-    fl.setArriveAirportId(airportX);
+    fl.setAirplaneId(airplaneId);
+    fl.setDepartAirportId(airportId);
+    fl.setArriveAirportId(airportId);
     fl.setDepartTime(QDateTime::currentDateTime());
     fl.setArriveTime(QDateTime::currentDateTime().addSecs(7200));
     fl.setStatus("normal");
-
     int flightId = flightDao.insert(fl);
+    qDebug() << "Inserted flight id =" << flightId;
 
-    Flight fl1 = flightDao.getById(flightId);
-    qDebug() << "Flight no:" << fl1.flightNo();
+    Flight f = flightDao.getById(flightId);
+    qDebug() << "Query flight no:" << f.flightNo();
 
-    // Update
-    fl1.setStatus("delayed");
-    flightDao.update(fl1);
-
-    Flight fl2 = flightDao.getById(flightId);
-    qDebug() << "Updated status:" << fl2.status();
-
-    // Get all
-    auto flights = flightDao.getAll();
-    qDebug() << "Flight count =" << flights.size();
-
-    // Delete
-    flightDao.remove(flightId);
-    qDebug() << "Flight removed. Exists?" << (flightDao.getById(flightId).id() != 0);
-
-
+    f.setStatus("delayed");
+    flightDao.update(f);
+    qDebug() << "Updated flight status:" << flightDao.getById(flightId).status();
 
     // ============================
-    // 5. Test Ticket
+    // 5. Insert Ticket
     // ============================
-    qDebug() << "\n===== Test TicketDao =====";
-
-    // 票必须依赖 flight，因此重新插入 flight
-    flightId = flightDao.insert(fl);
-
     Ticket tk;
     tk.setFlightId(flightId);
     tk.setTClass("economy");
     tk.setPrice(899.99);
     tk.setTotalSeats(150);
     tk.setRemainSeats(120);
-
     int ticketId = ticketDao.insert(tk);
+    qDebug() << "Inserted ticket id =" << ticketId;
 
-    Ticket tk1 = ticketDao.getById(ticketId);
-    qDebug() << "Ticket class:" << tk1.tClass();
+    Ticket t = ticketDao.getById(ticketId);
+    qDebug() << "Query ticket price:" << t.price();
 
-    // Update
-    tk1.setPrice(999.00);
-    tk1.setRemainSeats(118);
-    ticketDao.update(tk1);
+    t.setPrice(999.0);
+    t.setRemainSeats(118);
+    ticketDao.update(t);
+    qDebug() << "Updated ticket price:" << ticketDao.getById(ticketId).price();
 
-    Ticket tk2 = ticketDao.getById(ticketId);
-    qDebug() << "Updated ticket price:" << tk2.price();
+    // ============================
+    // 6. Delete all in reverse dependency order
+    // ============================
+    qDebug() << "\n===== Delete records =====";
 
-    // Get all
-    auto tickets = ticketDao.getAll();
-    qDebug() << "Ticket count =" << tickets.size();
-
-    // Delete
+    // 1. Ticket first
     ticketDao.remove(ticketId);
     qDebug() << "Ticket removed. Exists?" << (ticketDao.getById(ticketId).id() != 0);
 
+    // 2. Flight
+    flightDao.remove(flightId);
+    qDebug() << "Flight removed. Exists?" << (flightDao.getById(flightId).id() != 0);
+
+    // 3. Airplane
+    airplaneDao.remove(airplaneId);
+    qDebug() << "Airplane removed. Exists?" << (airplaneDao.getById(airplaneId).id() != 0);
+
+    // 4. Airport
+    airportDao.remove(airportId);
+    qDebug() << "Airport removed. Exists?" << (airportDao.getById(airportId).id() != 0);
+
+    // 5. City
+    cityDao.remove(cityId);
+    qDebug() << "City removed. Exists?" << (cityDao.getById(cityId).id() != 0);
 
     qDebug() << "\n===== ALL TEST DONE =====";
+
     return 0;
 }

@@ -3,6 +3,7 @@
 #include <QDir>
 #include <QSettings>
 #include <QSqlError>
+#include <QCoreApplication>
 
 DBManager &DBManager::instance() {
   static DBManager instance;
@@ -11,7 +12,7 @@ DBManager &DBManager::instance() {
 
 DBManager::DBManager() {
   // 配置文件路径：程序可执行文件所在目录/config/db.ini
-  QString configPath = QDir::currentPath() + "/config/db.ini";
+    QString configPath = QDir::cleanPath(QDir::currentPath() + "/../../../../config/db.ini");
 
   QSettings settings(configPath, QSettings::IniFormat);
 
@@ -21,6 +22,14 @@ DBManager::DBManager() {
   QString password = settings.value("database/password", "").toString();
   QString database = settings.value("database/database", "").toString();
 
+  qDebug() << "Config path:" << configPath;
+  qDebug() << "host:" << host
+           << "port:" << port
+           << "user:" << user
+           << "password:" << password
+           << "database:" << database;
+
+
   m_db = QSqlDatabase::addDatabase("QMYSQL");
   m_db.setHostName(host);
   m_db.setPort(port);
@@ -29,9 +38,10 @@ DBManager::DBManager() {
   m_db.setDatabaseName(database);
 
   if (!m_db.open()) {
-    qDebug() << "❌ 数据库连接失败:" << m_db.lastError().text();
+    qDebug() << "数据库连接失败:" << m_db.lastError().text() ;
+      // qDebug() << host << port << user << password << database;
   } else {
-    qDebug() << "✅ 数据库连接成功";
+    qDebug() << "数据库连接成功";
   }
 }
 
