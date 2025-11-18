@@ -1,5 +1,5 @@
-#ifndef TICKETDAOIMPL_H
-#define TICKETDAOIMPL_H
+#ifndef TICKET_DAO_IMPL_H
+#define TICKET_DAO_IMPL_H
 
 #include "../dao/TicketDao.h"
 #include <QSqlDatabase>
@@ -17,4 +17,4 @@ private:
     QSqlDatabase m_db;
 };
 
-#endif // TICKETDAOIMPL_H
+#endif // TICKET_DAO_IMPL_H

@@ -1,5 +1,5 @@
-#include "AirportDaoImpl.h"
-#include "../db/dbmanager.h"
+#include "airport_dao_impl.h"
+#include "../db/DBManager.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>

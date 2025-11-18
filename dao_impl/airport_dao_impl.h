@@ -1,5 +1,5 @@
-#ifndef AIRPORTDAOIMPL_H
-#define AIRPORTDAOIMPL_H
+#ifndef AIRPORT_DAO_IMPL_H
+#define AIRPORT_DAO_IMPL_H
 
 #include "../dao/AirportDao.h"
 #include <QSqlDatabase>
@@ -17,4 +17,4 @@ private:
     QSqlDatabase m_db;
 };
 
-#endif // AIRPORTDAOIMPL_H
+#endif // AIRPORT_DAO_IMPL_H

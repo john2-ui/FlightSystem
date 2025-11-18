@@ -1,5 +1,5 @@
-#ifndef CITYDAOIMPL_H
-#define CITYDAOIMPL_H
+#ifndef CITY_DAO_IMPL_H
+#define CITY_DAO_IMPL_H
 
 #include "../dao/CityDao.h"
 #include <QSqlDatabase>
@@ -17,4 +17,4 @@ private:
     QSqlDatabase m_db;
 };
 
-#endif // CITYDAOIMPL_H
+#endif // CITY_DAO_IMPL_H

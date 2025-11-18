@@ -10,5 +10,5 @@ DESTDIR = $$PWD/../build/lib
 
 INCLUDEPATH += $$PWD
 
-SOURCES += dbmanager.cpp
-HEADERS += dbmanager.h
+SOURCES += DBManager.cpp
+HEADERS += DBManager.h

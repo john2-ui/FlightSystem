@@ -1,5 +1,5 @@
-#ifndef FLIGHTDAOIMPL_H
-#define FLIGHTDAOIMPL_H
+#ifndef FLIGHT_DAO_IMPL_H
+#define FLIGHT_DAO_IMPL_H
 
 #include "../dao/FlightDao.h"
 #include <QSqlDatabase>
@@ -17,4 +17,4 @@ private:
     QSqlDatabase m_db;
 };
 
-#endif // FLIGHTDAOIMPL_H
+#endif // FLIGHT_DAO_IMPL_H
