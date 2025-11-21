@@ -8,7 +8,7 @@ CityDaoImpl::CityDaoImpl() {
     m_db = DBManager::instance().db();
 }
 
-bool CityDaoImpl::insert(const City& city) {
+int CityDaoImpl::insert(const City& city) {
     QSqlQuery query(m_db);
     query.prepare("INSERT INTO city(name, code, country) VALUES(:name, :code, :country)");
     query.bindValue(":name", city.name());
@@ -16,9 +16,9 @@ bool CityDaoImpl::insert(const City& city) {
     query.bindValue(":country", city.country());
     if (!query.exec()) {
         qDebug() << "Insert city failed:" << query.lastError().text();
-        return false;
+        return -1;
     }
-    return true;
+    return query.lastInsertId().toInt();
 }
 
 bool CityDaoImpl::update(const City& city) {
