@@ -7,7 +7,7 @@
 class CityDao {
 public:
     virtual ~CityDao() = default;
-    virtual bool insert(const City& city) = 0;
+    virtual int insert(const City& city) = 0;
     virtual bool update(const City& city) = 0;
     virtual bool remove(int id) = 0;
     virtual City getById(int id) = 0;

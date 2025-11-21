@@ -7,7 +7,7 @@
 class TicketDaoImpl : public TicketDao {
 public:
     TicketDaoImpl();
-    bool insert(const Ticket& ticket) override;
+    int insert(const Ticket& ticket) override;
     bool update(const Ticket& ticket) override;
     bool remove(int id) override;
     Ticket getById(int id) override;

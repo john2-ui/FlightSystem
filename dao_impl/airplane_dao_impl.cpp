@@ -8,7 +8,7 @@ AirplaneDaoImpl::AirplaneDaoImpl() {
     m_db = DBManager::instance().db();
 }
 
-bool AirplaneDaoImpl::insert(const Airplane& airplane) {
+int AirplaneDaoImpl::insert(const Airplane& airplane) {
     QSqlQuery query(m_db);
     query.prepare("INSERT INTO airplane(model, seats_economy, seats_business, seats_first) "
                   "VALUES(:model, :seats_economy, :seats_business, :seats_first)");
@@ -18,9 +18,9 @@ bool AirplaneDaoImpl::insert(const Airplane& airplane) {
     query.bindValue(":seats_first", airplane.seatsFirst());
     if (!query.exec()) {
         qDebug() << "Insert airplane failed:" << query.lastError().text();
-        return false;
+        return -1;
     }
-    return true;
+    return query.lastInsertId().toInt();
 }
 
 bool AirplaneDaoImpl::update(const Airplane& airplane) {

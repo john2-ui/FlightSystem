@@ -8,7 +8,7 @@ AirportDaoImpl::AirportDaoImpl() {
     m_db = DBManager::instance().db();
 }
 
-bool AirportDaoImpl::insert(const Airport& airport) {
+int AirportDaoImpl::insert(const Airport& airport) {
     QSqlQuery query(m_db);
     query.prepare("INSERT INTO airport(name, code, city_id, terminal_count) VALUES(:name, :code, :city_id, :terminal_count)");
     query.bindValue(":name", airport.name());
@@ -17,9 +17,9 @@ bool AirportDaoImpl::insert(const Airport& airport) {
     query.bindValue(":terminal_count", airport.terminalCount());
     if (!query.exec()) {
         qDebug() << "Insert airport failed:" << query.lastError().text();
-        return false;
+        return -1;
     }
-    return true;
+    return query.lastInsertId().toInt();
 }
 
 bool AirportDaoImpl::update(const Airport& airport) {

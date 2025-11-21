@@ -7,7 +7,7 @@
 class FlightDaoImpl : public FlightDao {
 public:
     FlightDaoImpl();
-    bool insert(const Flight& flight) override;
+    int insert(const Flight& flight) override;
     bool update(const Flight& flight) override;
     bool remove(int id) override;
     Flight getById(int id) override;

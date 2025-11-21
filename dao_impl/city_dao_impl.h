@@ -7,7 +7,7 @@
 class CityDaoImpl : public CityDao {
 public:
     CityDaoImpl();
-    bool insert(const City& city) override;
+    int insert(const City& city) override;
     bool update(const City& city) override;
     bool remove(int id) override;
     City getById(int id) override;
