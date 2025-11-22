@@ -15,6 +15,7 @@ SUBDIRS += \
     db \
     backend \
     model \
+    ui_admin \
     ui_client \
     ui_admin    \
     dao    \
