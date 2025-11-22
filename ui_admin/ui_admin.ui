@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ui_admin</class>
+ <widget class="QMainWindow" name="ui_admin">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>航班管理系统</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QStackedWidget" name="mainStackedWidget">
+    <property name="geometry">
+     <rect>
+      <x>-1</x>
+      <y>-1</y>
+      <width>591</width>
+      <height>261</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="page_addflight">
+     <widget class="QPushButton" name="pushButton">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>240</y>
+        <width>56</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>添加航班！</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_updateflight">
+     <widget class="QPushButton" name="pushButton_4">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>210</y>
+        <width>56</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>更新航班！</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_deleteflight">
+     <widget class="QPushButton" name="pushButton_3">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>110</y>
+        <width>56</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>删除航班！</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_addplane">
+     <widget class="QPushButton" name="pushButton_2">
+      <property name="geometry">
+       <rect>
+        <x>240</x>
+        <y>110</y>
+        <width>56</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>添加飞机！</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_updateplane"/>
+    <widget class="QWidget" name="page_deleteplane"/>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>600</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="FlightMenu">
+    <property name="title">
+     <string>管理航班</string>
+    </property>
+    <addaction name="AddFlight"/>
+    <addaction name="UpdateFlight"/>
+    <addaction name="DeleteFlight"/>
+   </widget>
+   <widget class="QMenu" name="PlaneMenu">
+    <property name="title">
+     <string>管理飞机</string>
+    </property>
+    <addaction name="AddPlane"/>
+    <addaction name="UpdatePlane"/>
+    <addaction name="DeletePlane"/>
+   </widget>
+   <addaction name="FlightMenu"/>
+   <addaction name="PlaneMenu"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="AddFlight">
+   <property name="text">
+    <string>添加航班</string>
+   </property>
+  </action>
+  <action name="UpdateFlight">
+   <property name="text">
+    <string>更新航班信息</string>
+   </property>
+  </action>
+  <action name="DeleteFlight">
+   <property name="text">
+    <string>删除航班</string>
+   </property>
+  </action>
+  <action name="AddPlane">
+   <property name="text">
+    <string>添加飞机</string>
+   </property>
+  </action>
+  <action name="UpdatePlane">
+   <property name="text">
+    <string>更新飞机信息</string>
+   </property>
+  </action>
+  <action name="DeletePlane">
+   <property name="text">
+    <string>删除飞机</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
