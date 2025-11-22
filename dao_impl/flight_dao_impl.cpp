@@ -8,7 +8,7 @@ FlightDaoImpl::FlightDaoImpl() {
     m_db = DBManager::instance().db();
 }
 
-bool FlightDaoImpl::insert(const Flight& flight) {
+int FlightDaoImpl::insert(const Flight& flight) {
     QSqlQuery query(m_db);
     query.prepare("INSERT INTO flight(flight_no, airplane_id, depart_airport_id, arrive_airport_id, depart_time, arrive_time, status) "
                   "VALUES(:flight_no, :airplane_id, :depart_airport_id, :arrive_airport_id, :depart_time, :arrive_time, :status)");
@@ -21,9 +21,9 @@ bool FlightDaoImpl::insert(const Flight& flight) {
     query.bindValue(":status", flight.status());
     if (!query.exec()) {
         qDebug() << "Insert flight failed:" << query.lastError().text();
-        return false;
+        return -1;
     }
-    return true;
+    return query.lastInsertId().toInt();
 }
 
 bool FlightDaoImpl::update(const Flight& flight) {

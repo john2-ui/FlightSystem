@@ -7,7 +7,7 @@
 class AirplaneDaoImpl : public AirplaneDao {
 public:
     AirplaneDaoImpl();
-    bool insert(const Airplane& airplane) override;
+    int insert(const Airplane& airplane) override;
     bool update(const Airplane& airplane) override;
     bool remove(int id) override;
     Airplane getById(int id) override;

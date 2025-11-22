@@ -8,7 +8,7 @@ TicketDaoImpl::TicketDaoImpl() {
     m_db = DBManager::instance().db();
 }
 
-bool TicketDaoImpl::insert(const Ticket& ticket) {
+int TicketDaoImpl::insert(const Ticket& ticket) {
     QSqlQuery query(m_db);
     query.prepare("INSERT INTO ticket(flight_id, class, price, total_seats, remain_seats) "
                   "VALUES(:flight_id, :class, :price, :total_seats, :remain_seats)");
@@ -17,7 +17,11 @@ bool TicketDaoImpl::insert(const Ticket& ticket) {
     query.bindValue(":price", ticket.price());
     query.bindValue(":total_seats", ticket.totalSeats());
     query.bindValue(":remain_seats", ticket.remainSeats());
-    return query.exec();
+    if (!query.exec()) {
+        qDebug() << "Insert ticket failed:" << query.lastError().text();
+        return -1;
+    }
+    return query.lastInsertId().toInt();
 }
 
 bool TicketDaoImpl::update(const Ticket& ticket) {

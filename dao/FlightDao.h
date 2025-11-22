@@ -7,7 +7,7 @@
 class FlightDao {
 public:
     virtual ~FlightDao() = default;
-    virtual bool insert(const Flight& flight) = 0;
+    virtual int insert(const Flight& flight) = 0;
     virtual bool update(const Flight& flight) = 0;
     virtual bool remove(int id) = 0;
     virtual Flight getById(int id) = 0;
