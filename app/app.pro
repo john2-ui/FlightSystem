@@ -6,6 +6,8 @@ SOURCES += main.cpp mainwindow.cpp
 HEADERS += mainwindow.h
 FORMS += mainwindow.ui
 
-INCLUDEPATH += $$PWD/../db
+INCLUDEPATH += \
+    $$PWD/../db \
+    $$PWD/../ui_admin
 
-LIBS += -L$$PWD/../build/lib -ldb -lbackend -lmodel -lui_admin -lui_client -ldao_impl
+LIBS += -L$$PWD/../build/lib -lui_admin -lbackend -ldb -lmodel -lui_client -ldao_impl

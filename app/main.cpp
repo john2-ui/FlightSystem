@@ -14,13 +14,13 @@
 // }
 
 
-#include <QCoreApplication>
+#include <QApplication>
 #include <QtSql>
 #include <QDebug>
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
+    QApplication a(argc, argv);
 
     // 1. 添加 MySQL 数据库驱动
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
@@ -39,5 +39,7 @@ int main(int argc, char *argv[])
     }
     qDebug() << "数据库连接成功!";
 
-    return 0;
+    MainWindow w;
+    w.show();
+    return a.exec();
 }
