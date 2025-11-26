@@ -1,0 +1,416 @@
+#include "backend.h"
+#include "../db/DBManager.h"
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QDebug>
+
+Backend& Backend::instance() {
+    static Backend instance;
+    return instance;
+}
+
+Backend::Backend() {
+    qDebug() << "Backend 初始化...";
+    
+    cityDao = new CityDaoImpl();
+    airportDao = new AirportDaoImpl();
+    airplaneDao = new AirplaneDaoImpl();
+    flightDao = new FlightDaoImpl();
+    ticketDao = new TicketDaoImpl();
+    
+    qDebug() << "Backend 初始化完成";
+}
+
+Backend::~Backend() {
+    delete cityDao;
+    delete airportDao;
+    delete airplaneDao;
+    delete flightDao;
+    delete ticketDao;
+}
+
+QList<City> Backend::getAllCities() {
+    return cityDao->getAll();
+}
+
+City Backend::getCityById(int id) {
+    return cityDao->getById(id);
+}
+
+City Backend::getCityByCode(const QString& code) {
+    QList<City> cities = cityDao->getAll();
+    for (const City& city : cities) {
+        if (city.code() == code) {
+            return city;
+        }
+    }
+    return City();
+}
+
+QList<Airport> Backend::getAllAirports() {
+    return airportDao->getAll();
+}
+
+Airport Backend::getAirportById(int id) {
+    return airportDao->getById(id);
+}
+
+Airport Backend::getAirportByCode(const QString& code) {
+    QList<Airport> airports = airportDao->getAll();
+    for (const Airport& airport : airports) {
+        if (airport.code() == code) {
+            return airport;
+        }
+    }
+    return Airport();
+}
+
+QList<Airport> Backend::getAirportsByCity(int cityId) {
+    QList<Airport> result;
+    QList<Airport> allAirports = airportDao->getAll();
+    for (const Airport& airport : allAirports) {
+        if (airport.cityId() == cityId) {
+            result.append(airport);
+        }
+    }
+    return result;
+}
+
+QList<Airplane> Backend::getAllAirplanes() {
+    return airplaneDao->getAll();
+}
+
+Airplane Backend::getAirplaneById(int id) {
+    return airplaneDao->getById(id);
+}
+
+FlightDetailInfo Backend::getFlightDetail(int flightId) {
+    FlightDetailInfo info;
+    
+    Flight flight = flightDao->getById(flightId);
+    if (flight.id() == 0) {
+        qDebug() << "航班不存在:" << flightId;
+        return info;
+    }
+    
+    info.flightId = flight.id();
+    info.flightNo = flight.flightNo();
+    info.departTime = flight.departTime();
+    info.arriveTime = flight.arriveTime();
+    info.status = flight.status();
+    
+    Airport departAirport = airportDao->getById(flight.departAirportId());
+    if (departAirport.id() != 0) {
+        City departCity = cityDao->getById(departAirport.cityId());
+        info.departCityName = departCity.name();
+        info.departAirportName = departAirport.name();
+        info.departAirportCode = departAirport.code();
+    }
+    
+    Airport arriveAirport = airportDao->getById(flight.arriveAirportId());
+    if (arriveAirport.id() != 0) {
+        City arriveCity = cityDao->getById(arriveAirport.cityId());
+        info.arriveCityName = arriveCity.name();
+        info.arriveAirportName = arriveAirport.name();
+        info.arriveAirportCode = arriveAirport.code();
+    }
+    
+    Airplane airplane = airplaneDao->getById(flight.airplaneId());
+    if (airplane.id() != 0) {
+        info.airplaneModel = airplane.model();
+    }
+    
+    // TODO: 优化 - 应使用 getByFlightId() 避免全表扫描
+    QList<Ticket> allTickets = ticketDao->getAll();
+    for (const Ticket& ticket : allTickets) {
+        if (ticket.flightId() == flightId) {
+            TicketInfo tInfo;
+            tInfo.ticketId = ticket.id();
+            tInfo.ticketClass = ticket.tClass();
+            tInfo.price = ticket.price();
+            tInfo.totalSeats = ticket.totalSeats();
+            tInfo.remainSeats = ticket.remainSeats();
+            info.tickets[ticket.tClass()] = tInfo;
+        }
+    }
+    
+    return info;
+}
+
+QList<FlightDetailInfo> Backend::getAllFlights() {
+    QList<FlightDetailInfo> result;
+    QList<Flight> flights = flightDao->getAll();
+    
+    for (const Flight& flight : flights) {
+        result.append(getFlightDetail(flight.id()));
+    }
+    
+    return result;
+}
+
+QList<FlightDetailInfo> Backend::searchFlights(
+    const QString& fromCityCode,
+    const QString& toCityCode,
+    const QDate& date
+) {
+    QList<FlightDetailInfo> result;
+    
+    City fromCity = getCityByCode(fromCityCode);
+    City toCity = getCityByCode(toCityCode);
+    
+    if (fromCity.id() == 0 || toCity.id() == 0) {
+        qDebug() << "城市代码无效:" << fromCityCode << toCityCode;
+        return result;
+    }
+    
+    QList<Airport> fromAirports = getAirportsByCity(fromCity.id());
+    QList<Airport> toAirports = getAirportsByCity(toCity.id());
+    
+    // TODO: 严重性能问题 - 应使用 SQL JOIN 一次查询完成
+    QList<Flight> allFlights = flightDao->getAll();
+    for (const Flight& flight : allFlights) {
+        if (flight.departTime().date() != date) {
+            continue;
+        }
+        
+        bool matchDepart = false;
+        bool matchArrive = false;
+        
+        for (const Airport& airport : fromAirports) {
+            if (flight.departAirportId() == airport.id()) {
+                matchDepart = true;
+                break;
+            }
+        }
+        
+        for (const Airport& airport : toAirports) {
+            if (flight.arriveAirportId() == airport.id()) {
+                matchArrive = true;
+                break;
+            }
+        }
+        
+        if (matchDepart && matchArrive) {
+            result.append(getFlightDetail(flight.id()));
+        }
+    }
+    
+    qDebug() << "查询航班:" << fromCityCode << "->" << toCityCode 
+             << "日期:" << date << "结果:" << result.size();
+    
+    return result;
+}
+
+bool Backend::checkTicketAvailability(
+    int flightId,
+    const QString& ticketClass,
+    int quantity
+) {
+    // TODO: 优化 - 应使用 getByFlightAndClass() 避免全表扫描
+    QList<Ticket> allTickets = ticketDao->getAll();
+    for (const Ticket& ticket : allTickets) {
+        if (ticket.flightId() == flightId && ticket.tClass() == ticketClass) {
+            return ticket.remainSeats() >= quantity;
+        }
+    }
+    return false;
+}
+
+bool Backend::bookTicket(
+    int flightId,
+    const QString& ticketClass,
+    int quantity,
+    QString& errorMsg
+) {
+    QSqlDatabase db = DBManager::instance().db();
+    
+    if (!db.transaction()) {
+        errorMsg = "无法开启事务";
+        qDebug() << errorMsg;
+        return false;
+    }
+    
+    Flight flight = flightDao->getById(flightId);
+    if (flight.id() == 0) {
+        db.rollback();
+        errorMsg = "航班不存在";
+        qDebug() << errorMsg;
+        return false;
+    }
+    
+    if (flight.status() != "normal") {
+        db.rollback();
+        errorMsg = "航班状态异常: " + flight.status();
+        qDebug() << errorMsg;
+        return false;
+    }
+    
+    Ticket ticket;
+    QList<Ticket> allTickets = ticketDao->getAll();
+    bool found = false;
+    for (const Ticket& t : allTickets) {
+        if (t.flightId() == flightId && t.tClass() == ticketClass) {
+            ticket = t;
+            found = true;
+            break;
+        }
+    }
+    
+    if (!found) {
+        db.rollback();
+        errorMsg = "该舱位不存在";
+        qDebug() << errorMsg;
+        return false;
+    }
+    
+    if (ticket.remainSeats() < quantity) {
+        db.rollback();
+        errorMsg = QString("余票不足，仅剩 %1 张").arg(ticket.remainSeats());
+        qDebug() << errorMsg;
+        return false;
+    }
+    
+    ticket.setRemainSeats(ticket.remainSeats() - quantity);
+    if (!ticketDao->update(ticket)) {
+        db.rollback();
+        errorMsg = "更新余票失败";
+        qDebug() << errorMsg;
+        return false;
+    }
+    
+    if (!db.commit()) {
+        db.rollback();
+        errorMsg = "提交事务失败";
+        qDebug() << errorMsg;
+        return false;
+    }
+    
+    qDebug() << "预订成功：航班" << flight.flightNo() 
+             << "舱位" << ticketClass 
+             << "数量" << quantity
+             << "剩余" << ticket.remainSeats();
+    
+    return true;
+}
+
+bool Backend::cancelBooking(
+    int flightId,
+    const QString& ticketClass,
+    int quantity,
+    QString& errorMsg
+) {
+    QSqlDatabase db = DBManager::instance().db();
+    
+    if (!db.transaction()) {
+        errorMsg = "无法开启事务";
+        return false;
+    }
+    
+    Ticket ticket;
+    QList<Ticket> allTickets = ticketDao->getAll();
+    bool found = false;
+    for (const Ticket& t : allTickets) {
+        if (t.flightId() == flightId && t.tClass() == ticketClass) {
+            ticket = t;
+            found = true;
+            break;
+        }
+    }
+    
+    if (!found) {
+        db.rollback();
+        errorMsg = "该舱位不存在";
+        return false;
+    }
+    
+    if (ticket.remainSeats() + quantity > ticket.totalSeats()) {
+        db.rollback();
+        errorMsg = "取消数量超出范围";
+        return false;
+    }
+    
+    ticket.setRemainSeats(ticket.remainSeats() + quantity);
+    if (!ticketDao->update(ticket)) {
+        db.rollback();
+        errorMsg = "更新余票失败";
+        return false;
+    }
+    
+    if (!db.commit()) {
+        db.rollback();
+        errorMsg = "提交事务失败";
+        return false;
+    }
+    
+    qDebug() << "取消预订成功：数量" << quantity << "剩余" << ticket.remainSeats();
+    return true;
+}
+
+int Backend::addFlight(const Flight& flight, QString& errorMsg) {
+    Airplane airplane = airplaneDao->getById(flight.airplaneId());
+    if (airplane.id() == 0) {
+        errorMsg = "飞机不存在";
+        return -1;
+    }
+    
+    Airport departAirport = airportDao->getById(flight.departAirportId());
+    Airport arriveAirport = airportDao->getById(flight.arriveAirportId());
+    if (departAirport.id() == 0 || arriveAirport.id() == 0) {
+        errorMsg = "机场不存在";
+        return -1;
+    }
+    
+    int flightId = flightDao->insert(flight);
+    if (flightId <= 0) {
+        errorMsg = "插入航班失败";
+        return -1;
+    }
+    
+    qDebug() << "添加航班成功，ID:" << flightId;
+    return flightId;
+}
+
+bool Backend::updateFlight(const Flight& flight, QString& errorMsg) {
+    if (!flightDao->update(flight)) {
+        errorMsg = "更新航班失败";
+        return false;
+    }
+    return true;
+}
+
+bool Backend::deleteFlight(int flightId, QString& errorMsg) {
+    if (!flightDao->remove(flightId)) {
+        errorMsg = "删除航班失败";
+        return false;
+    }
+    return true;
+}
+
+bool Backend::updateFlightStatus(int flightId, const QString& status) {
+    Flight flight = flightDao->getById(flightId);
+    if (flight.id() == 0) {
+        return false;
+    }
+    flight.setStatus(status);
+    return flightDao->update(flight);
+}
+
+int Backend::addAirplane(const Airplane& airplane) {
+    return airplaneDao->insert(airplane);
+}
+
+bool Backend::updateAirplane(const Airplane& airplane) {
+    return airplaneDao->update(airplane);
+}
+
+bool Backend::deleteAirplane(int airplaneId) {
+    return airplaneDao->remove(airplaneId);
+}
+
+int Backend::addCity(const City& city) {
+    return cityDao->insert(city);
+}
+
+int Backend::addAirport(const Airport& airport) {
+    return airportDao->insert(airport);
+}
