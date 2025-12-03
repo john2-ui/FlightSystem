@@ -7,6 +7,7 @@ void testBasicQueries();
 void testFlightSearch();
 void testBooking();
 void testAdminFunctions();
+void testAddFlightAPI();
 
 int main(int argc, char *argv[])
 {
@@ -27,6 +28,9 @@ int main(int argc, char *argv[])
     
     // 测试4: 管理员功能
     testAdminFunctions();
+
+    // 测试5: 新增航班接口（字段入参版）
+    testAddFlightAPI();
 
     qDebug() << "\n========================================";
     qDebug() << "  所有测试完成！";
@@ -184,12 +188,7 @@ void testAdminFunctions() {
     
     // 4.1 添加城市
     qDebug() << "\n--- 测试添加城市 ---";
-    City newCity;
-    newCity.setName("测试城市");
-    newCity.setCode("TEST");
-    newCity.setCountry("中国");
-    
-    int cityId = backend.addCity(newCity);
+    int cityId = backend.addCity("测试城市", "TEST", "中国");
     qDebug() << "添加城市，ID:" << cityId;
     
     if (cityId > 0) {
@@ -201,13 +200,7 @@ void testAdminFunctions() {
     // 4.2 添加机场
     if (cityId > 0) {
         qDebug() << "\n--- 测试添加机场 ---";
-        Airport newAirport;
-        newAirport.setName("测试机场");
-        newAirport.setCode("TST");
-        newAirport.setCityId(cityId);
-        newAirport.setTerminalCount(1);
-        
-        int airportId = backend.addAirport(newAirport);
+        int airportId = backend.addAirport("测试机场", "TST", cityId, 1);
         qDebug() << "添加机场，ID:" << airportId;
         
         if (airportId > 0) {
@@ -218,13 +211,7 @@ void testAdminFunctions() {
     
     // 4.3 添加飞机
     qDebug() << "\n--- 测试添加飞机 ---";
-    Airplane newAirplane;
-    newAirplane.setModel("TestPlane-001");
-    newAirplane.setSeatsEconomy(100);
-    newAirplane.setSeatsBusiness(20);
-    newAirplane.setSeatsFirst(10);
-    
-    int airplaneId = backend.addAirplane(newAirplane);
+    int airplaneId = backend.addAirplane("TestPlane-001", 100, 20, 10);
     qDebug() << "添加飞机，ID:" << airplaneId;
     
     if (airplaneId > 0) {
@@ -249,5 +236,88 @@ void testAdminFunctions() {
             backend.updateFlightStatus(testFlightId, oldStatus);
             qDebug() << "状态已恢复为:" << oldStatus;
         }
+    }
+}
+
+void testAddFlightAPI() {
+    qDebug() << "\n===== 测试5: addFlight 字段参数接口 =====";
+
+    Backend& backend = Backend::instance();
+    QString errorMsg;
+
+    const QString suffix = QString::number(QDateTime::currentMSecsSinceEpoch() % 1000000);
+
+    // 1. 准备城市与机场
+    const QString cityNameA = QString("AutoCityA_%1").arg(suffix);
+    const QString cityCodeA = QString("ACA%1").arg(suffix.mid(0, 3));
+    const QString cityNameB = QString("AutoCityB_%1").arg(suffix);
+    const QString cityCodeB = QString("ACB%1").arg(suffix.mid(0, 3));
+
+    int cityIdA = backend.addCity(cityNameA, cityCodeA, "中国");
+    int cityIdB = backend.addCity(cityNameB, cityCodeB, "中国");
+
+    qDebug() << "城市A/B ID:" << cityIdA << cityIdB;
+    if (cityIdA <= 0 || cityIdB <= 0) {
+        qDebug() << "添加城市失败，终止测试";
+        return;
+    }
+
+    const QString airportCodeA = QString("APA%1").arg(suffix.mid(0, 3));
+    const QString airportCodeB = QString("APB%1").arg(suffix.mid(0, 3));
+
+    int airportIdA = backend.addAirport(QString("AutoAirportA_%1").arg(suffix), airportCodeA, cityIdA, 1);
+    int airportIdB = backend.addAirport(QString("AutoAirportB_%1").arg(suffix), airportCodeB, cityIdB, 1);
+
+    qDebug() << "机场A/B ID:" << airportIdA << airportIdB;
+    if (airportIdA <= 0 || airportIdB <= 0) {
+        qDebug() << "添加机场失败，终止测试";
+        return;
+    }
+
+    // 2. 准备飞机
+    const QString planeModel = QString("AutoPlane_%1").arg(suffix);
+    int airplaneId = backend.addAirplane(planeModel, 60, 12, 6);
+    qDebug() << "飞机 ID:" << airplaneId;
+    if (airplaneId <= 0) {
+        qDebug() << "添加飞机失败，终止测试";
+        return;
+    }
+
+    // 3. 调用新的 addFlight 接口
+    const QString flightNo = QString("AUTO%1").arg(suffix.mid(0, 4));
+    QDateTime departTime = QDateTime::currentDateTime().addDays(1);
+    QDateTime arriveTime = departTime.addSecs(2 * 3600);  // +2 小时
+
+    int flightId = backend.addFlight(
+        flightNo,
+        airplaneId,
+        airportIdA,
+        airportIdB,
+        departTime,
+        arriveTime,
+        QStringLiteral("scheduled"),
+        errorMsg
+    );
+
+    if (flightId <= 0) {
+        qDebug() << "添加航班失败:" << errorMsg;
+        return;
+    }
+
+    qDebug() << "添加航班成功，ID:" << flightId;
+
+    // 4. 验证航班详情与票务初始化
+    FlightDetailInfo detail = backend.getFlightDetail(flightId);
+    qDebug() << "航班号:" << detail.flightNo;
+    qDebug() << "出发机场:" << detail.departAirportName << detail.departAirportCode;
+    qDebug() << "到达机场:" << detail.arriveAirportName << detail.arriveAirportCode;
+    qDebug() << "机型:" << detail.airplaneModel;
+
+    qDebug() << "票务初始化情况:";
+    for (auto it = detail.tickets.begin(); it != detail.tickets.end(); ++it) {
+        const TicketInfo& ticket = it.value();
+        qDebug() << "  舱位" << ticket.ticketClass
+                 << "总座位:" << ticket.totalSeats
+                 << "余票:" << ticket.remainSeats;
     }
 }
