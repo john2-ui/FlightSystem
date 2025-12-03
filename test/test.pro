@@ -4,8 +4,8 @@ CONFIG -= app_bundle
 TEMPLATE = app
 
 # 选择要运行的测试程序
-# SOURCES += test_db.cpp          # DAO层测试
-SOURCES += test_backend.cpp       # Backend层测试
+SOURCES += test_db.cpp          # DAO层测试
+# SOURCES += test_backend.cpp       # Backend层测试
 
 INCLUDEPATH += ../model \
                ../dao \

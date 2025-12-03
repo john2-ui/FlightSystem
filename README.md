@@ -11,9 +11,10 @@
     ├─ config/                                 # 配置文件模块
     ├─ db/                                     # 数据库管理模块
     ├─ dao/                                     # dao层模块(实现CRUD操作)
-    ├─ dao_impl/                                     # dao_impl层模块(用QSqlQuery实现DAO接口)
+    ├─ dao_impl/                               # dao_impl层模块(用QSqlQuery实现DAO接口)
     ├─ model/                                  # 数据模型模块
-    ├─ backend/                                   # 核心业务逻辑（Service 层）
+    ├─ test/                                    # 测试模块，主要用于测试数据库接口以及后端接口
+    ├─ backend/                                 # 核心业务逻辑（Service 层）
     ├─ ui_client/                               # 用户端 UI
     ├─ ui_admin/                                # 管理端 UI
     └─ resources/                               # 资源文件（图标、QSS 样式、图片）

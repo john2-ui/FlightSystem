@@ -8,12 +8,14 @@
 #include "../dao_impl/airport_dao_impl.h"
 #include "../dao_impl/flight_dao_impl.h"
 #include "../dao_impl/ticket_dao_impl.h"
+#include "../dao_impl/user_dao_impl.h"
 
 #include "../model/Ticket.h"
 #include "../model/Airplane.h"
 #include "../model/Airport.h"
 #include "../model/Flight.h"
 #include "../model/City.h"
+#include "../model/User.h"
 
 int main(int argc, char *argv[])
 {
@@ -25,6 +27,7 @@ int main(int argc, char *argv[])
     AirplaneDaoImpl airplaneDao;
     FlightDaoImpl flightDao;
     TicketDaoImpl ticketDao;
+    UserDaoImpl userDao;
 
     qDebug() << "===== START CRUD TEST =====";
 
@@ -124,8 +127,38 @@ int main(int argc, char *argv[])
     ticketDao.update(t);
     qDebug() << "Updated ticket price:" << ticketDao.getById(ticketId).price();
 
+
     // ============================
-    // 6. Delete all in reverse dependency order
+    // 6. Insert User
+    // ============================
+    QVector<int> userTickets;
+    userTickets.append(ticketId); // 假设用户购买了刚才插入的票
+
+    User u("tom", "123456", userTickets);
+    int userId = userDao.insert(u);
+    qDebug() << "Inserted user id =" << userId;
+
+    // Query
+    User user = userDao.getById(userId);
+    qDebug() << "Query user username:" << user.username()
+            << ", ticketsID:" << user.ticketsID();
+
+    // Update
+    user.setPassword("654321");
+    user.setTicketsID({ticketId, ticketId}); // 用户买了两张票
+    userDao.update(user);
+    User updatedUser = userDao.getById(userId);
+    qDebug() << "Updated user password:" << updatedUser.password()
+            << ", ticketsID:" << updatedUser.ticketsID();
+
+    // Query by username
+    User userByName = userDao.getByUsername("tom");
+    qDebug() << "Query by username, id:" << userByName.id()
+            << ", ticketsID:" << userByName.ticketsID();
+
+
+    // ============================
+    // 7. Delete all in reverse dependency order
     // ============================
     qDebug() << "\n===== Delete records =====";
 
@@ -148,6 +181,10 @@ int main(int argc, char *argv[])
     // 5. City
     cityDao.remove(cityId);
     qDebug() << "City removed. Exists?" << (cityDao.getById(cityId).id() != 0);
+
+    // 6. User
+    userDao.remove(userId);
+    qDebug() << "User removed. Exists?" << (userDao.getById(userId).id() != 0);
 
     qDebug() << "\n===== ALL TEST DONE =====";
 
