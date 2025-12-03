@@ -11,4 +11,5 @@ HEADERS += Airplane.h \
     Airport.h \
     City.h \
     Flight.h \
-    Ticket.h
+    Ticket.h    \
+    User.h
