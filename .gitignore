@@ -1,4 +1,4 @@
-build-*/
+build/
 *.o
 *.obj
 *.exe
@@ -6,3 +6,4 @@ build-*/
 *.so
 *.a
 .qtcreator/
+*.pro.user

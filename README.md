@@ -6,12 +6,14 @@
     
     FlightSystem/
     │
-    ├─ CMakeLists.txt                          # Qt 项目入口文件
+    ├─ FlightSystem.pro                        # Qt 项目入口文件
     ├─ README.md                               # 项目说明
     ├─ config/                                 # 配置文件模块
-    ├─ db/                                     # 数据库模块（DAO 层）
+    ├─ db/                                     # 数据库管理模块
+    ├─ dao/                                     # dao层模块(实现CRUD操作)
+    ├─ dao_impl/                                     # dao_impl层模块(用QSqlQuery实现DAO接口)
     ├─ model/                                  # 数据模型模块
-    ├─ core/                                   # 核心业务逻辑（Service 层）
+    ├─ backend/                                   # 核心业务逻辑（Service 层）
     ├─ ui_client/                               # 用户端 UI
     ├─ ui_admin/                                # 管理端 UI
     └─ resources/                               # 资源文件（图标、QSS 样式、图片）
