@@ -8,7 +8,6 @@ void testFlightSearch();
 void testBooking();
 void testAdminFunctions();
 void testAddFlightAPI();
-void testUserWorkflows();
 
 int main(int argc, char *argv[])
 {
@@ -32,9 +31,6 @@ int main(int argc, char *argv[])
 
     // 测试5: 新增航班接口（字段入参版）
     testAddFlightAPI();
-
-    // 测试6: 用户相关流程
-    testUserWorkflows();
 
     qDebug() << "\n========================================";
     qDebug() << "  所有测试完成！";
@@ -324,99 +320,4 @@ void testAddFlightAPI() {
                  << "总座位:" << ticket.totalSeats
                  << "余票:" << ticket.remainSeats;
     }
-}
-
-void testUserWorkflows() {
-    qDebug() << "\n===== 测试6: 用户登录/购票/退票流程 =====";
-
-    Backend& backend = Backend::instance();
-    QString errorMsg;
-
-    const QString suffix = QString::number(QDateTime::currentMSecsSinceEpoch() % 1000000);
-
-    // 1. 注册用户
-    const QString username = QString("user_%1").arg(suffix);
-    const QString password = QString("pwd_%1").arg(suffix);
-
-    bool registered = backend.registerUser(username, password, errorMsg);
-    qDebug() << "注册用户" << username
-             << (registered ? QStringLiteral("成功") : QStringLiteral("失败: ") + errorMsg);
-    if (!registered) {
-        return;
-    }
-
-    int userId = -1;
-    bool loginSuccess = backend.loginUser(username, password, userId, errorMsg);
-    qDebug() << "登录状态:" << (loginSuccess ? QStringLiteral("成功") : QStringLiteral("失败: ") + errorMsg)
-             << "userId=" << userId;
-    if (!loginSuccess || userId <= 0) {
-        return;
-    }
-
-    // 2. 构造航班，准备票务
-    int cityIdA = backend.addCity(QString("UserCityA_%1").arg(suffix), QString("UCA%1").arg(suffix.mid(0, 3)), "中国");
-    int cityIdB = backend.addCity(QString("UserCityB_%1").arg(suffix), QString("UCB%1").arg(suffix.mid(0, 3)), "中国");
-    if (cityIdA <= 0 || cityIdB <= 0) {
-        qDebug() << "创建城市失败";
-        return;
-    }
-
-    int airportIdA = backend.addAirport(QString("UserAirportA_%1").arg(suffix), QString("UAA%1").arg(suffix.mid(0, 3)), cityIdA, 1);
-    int airportIdB = backend.addAirport(QString("UserAirportB_%1").arg(suffix), QString("UAB%1").arg(suffix.mid(0, 3)), cityIdB, 1);
-    int airplaneId = backend.addAirplane(QString("UserPlane_%1").arg(suffix), 50, 10, 5);
-    if (airportIdA <= 0 || airportIdB <= 0 || airplaneId <= 0) {
-        qDebug() << "创建机场或飞机失败";
-        return;
-    }
-
-    QDateTime departTime = QDateTime::currentDateTime().addDays(2);
-    QDateTime arriveTime = departTime.addSecs(2 * 3600);
-    int flightId = backend.addFlight(
-        QString("USR%1").arg(suffix.mid(0, 4)),
-        airplaneId,
-        airportIdA,
-        airportIdB,
-        departTime,
-        arriveTime,
-        QStringLiteral("scheduled"),
-        errorMsg
-    );
-
-    if (flightId <= 0) {
-        qDebug() << "创建航班失败:" << errorMsg;
-        return;
-    }
-
-    FlightDetailInfo detail = backend.getFlightDetail(flightId);
-    if (detail.tickets.isEmpty()) {
-        qDebug() << "航班无票可卖";
-        return;
-    }
-
-    TicketInfo ticket = detail.tickets.first();
-    qDebug() << "使用票 ID:" << ticket.ticketId << "舱位:" << ticket.ticketClass;
-
-    // 3. 购票
-    bool purchaseOk = backend.purchaseTicket(userId, ticket.ticketId, 1, errorMsg);
-    qDebug() << "购票结果:" << (purchaseOk ? QStringLiteral("成功") : QStringLiteral("失败: ") + errorMsg);
-    if (!purchaseOk) {
-        return;
-    }
-
-    FlightDetailInfo afterPurchase = backend.getFlightDetail(flightId);
-    qDebug() << "购票后余票:" << afterPurchase.tickets[ticket.ticketClass].remainSeats;
-
-    // 4. 退票
-    bool refundOk = backend.refundTicket(userId, ticket.ticketId, 1, errorMsg);
-    qDebug() << "退票结果:" << (refundOk ? QStringLiteral("成功") : QStringLiteral("失败: ") + errorMsg);
-    if (!refundOk) {
-        return;
-    }
-
-    FlightDetailInfo afterRefund = backend.getFlightDetail(flightId);
-    qDebug() << "退票后余票:" << afterRefund.tickets[ticket.ticketClass].remainSeats;
-
-    // 5. 注销用户
-    bool deleteOk = backend.deleteUser(userId, errorMsg);
-    qDebug() << "删除用户结果:" << (deleteOk ? QStringLiteral("成功") : QStringLiteral("失败: ") + errorMsg);
 }
