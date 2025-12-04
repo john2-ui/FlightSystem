@@ -227,12 +227,7 @@ void ui_admin::on_btn_addcity_clicked()
         return;
     }
 
-    City newcity;
-    newcity.setName(cityname);
-    newcity.setCode(citycode);
-    newcity.setCountry(citycountry);
-
-    int cityId = Backend::instance().addCity(newcity);
+    int cityId = Backend::instance().addCity(cityname, citycode, citycountry);
     if (cityId > 0) {
         QMessageBox::information(this, "成功", "添加城市成功！ID: " + QString::number(cityId));
         ui->newcityname->clear();
@@ -260,13 +255,7 @@ void ui_admin::on_btn_addairport_clicked()
         return;
     }
 
-    Airport newairport;
-    newairport.setName(airportname);
-    newairport.setCode(airportcode);
-    newairport.setTerminalCount(terminalCount);
-    newairport.setCityId(selectedCityId);
-
-    int airportId = Backend::instance().addAirport(newairport);
+    int airportId = Backend::instance().addAirport(airportname, airportcode, selectedCityId, terminalCount);
     if (airportId > 0) {
         QMessageBox::information(this, "成功", "添加机场成功！ID: " + QString::number(airportId));
         ui->newairportname->clear();
@@ -289,13 +278,7 @@ void ui_admin::on_btn_addplane_clicked()
         return;
     }
 
-    Airplane newplane;
-    newplane.setModel(planemodel);
-    newplane.setSeatsEconomy(seatsEconomy);
-    newplane.setSeatsBusiness(seatsBusiness);
-    newplane.setSeatsFirst(seatsFirst);
-
-    int AirplaneId = Backend::instance().addAirplane(newplane);
+    int AirplaneId = Backend::instance().addAirplane(planemodel, seatsEconomy, seatsBusiness, seatsFirst);
     if (AirplaneId > 0) {
         QMessageBox::information(this, "成功", "添加飞机成功！ID: " + QString::number(AirplaneId));
         ui->newplanemodel->clear();
@@ -332,17 +315,17 @@ void ui_admin::on_btn_addflight_clicked()
         status = "scheduled";
     }
 
-    Flight newflight;
-    newflight.setFlightNo(flightNo);
-    newflight.setAirplaneId(airplaneId);
-    newflight.setDepartAirportId(departairportId);
-    newflight.setArriveAirportId(arriveairportId);
-    newflight.setDepartTime(departtime);
-    newflight.setArriveTime(arrivetime);
-    newflight.setStatus(status);
-
     QString errorMsg;
-    int flightId = Backend::instance().addFlight(newflight, errorMsg);
+    int flightId = Backend::instance().addFlight(
+        flightNo,
+        airplaneId,
+        departairportId,
+        arriveairportId,
+        departtime,
+        arrivetime,
+        status,
+        errorMsg
+    );
     if (flightId > 0) {
         QMessageBox::information(this, "成功", "添加航班成功！ID: " + QString::number(flightId));
         ui->flightNo->clear();

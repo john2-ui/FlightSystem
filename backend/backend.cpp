@@ -346,23 +346,75 @@ bool Backend::cancelBooking(
     return true;
 }
 
-int Backend::addFlight(const Flight& flight, QString& errorMsg) {
-    Airplane airplane = airplaneDao->getById(flight.airplaneId());
+int Backend::addFlight(
+    const QString& flightNo,
+    int airplaneId,
+    int departAirportId,
+    int arriveAirportId,
+    const QDateTime& departTime,
+    const QDateTime& arriveTime,
+    const QString& status,
+    QString& errorMsg
+) {
+    QSqlDatabase db = DBManager::instance().db();
+    if (!db.transaction()) {
+        errorMsg = "无法开启事务";
+        qDebug() << errorMsg;
+        return -1;
+    }
+
+    Airplane airplane = airplaneDao->getById(airplaneId);
     if (airplane.id() == 0) {
+        db.rollback();
         errorMsg = "飞机不存在";
+        qDebug() << errorMsg;
         return -1;
     }
     
-    Airport departAirport = airportDao->getById(flight.departAirportId());
-    Airport arriveAirport = airportDao->getById(flight.arriveAirportId());
-    if (departAirport.id() == 0 || arriveAirport.id() == 0) {
+    Airport departAirport = airportDao->getById(departAirportId);
+    Airport arriveAirport = airportDao->getById(arriveAirportId);
+    if (departAirport.id() == 0 || arriveAirport.id() == 0)/*默认空对象为0*/ {
+        db.rollback();
         errorMsg = "机场不存在";
+        qDebug() << errorMsg;
         return -1;
     }
     
+    Flight flight(0, flightNo, airplaneId, departAirportId, arriveAirportId, departTime, arriveTime, status);
     int flightId = flightDao->insert(flight);
     if (flightId <= 0) {
+        db.rollback();
         errorMsg = "插入航班失败";
+        qDebug() << errorMsg;
+        return -1;
+    }
+
+    const struct TicketSeed {
+        QString klass;
+        int seats;
+    } ticketSeeds[] = {
+        {QStringLiteral("economy"), airplane.seatsEconomy()},
+        {QStringLiteral("business"), airplane.seatsBusiness()},
+        {QStringLiteral("first"), airplane.seatsFirst()}
+    };
+
+    for (const TicketSeed& seed : ticketSeeds) {
+        if (seed.seats <= 0) {
+            continue;
+        }
+        Ticket ticket(0, flightId, seed.klass, 0.0, seed.seats, seed.seats);
+        if (ticketDao->insert(ticket) <= 0) {
+            db.rollback();
+            errorMsg = QStringLiteral("初始化%1舱位失败").arg(seed.klass);
+            qDebug() << errorMsg;
+            return -1;
+        }
+    }
+
+    if (!db.commit()) {
+        db.rollback();
+        errorMsg = "提交事务失败";
+        qDebug() << errorMsg;
         return -1;
     }
     
@@ -371,10 +423,113 @@ int Backend::addFlight(const Flight& flight, QString& errorMsg) {
 }
 
 bool Backend::updateFlight(const Flight& flight, QString& errorMsg) {
-    if (!flightDao->update(flight)) {
-        errorMsg = "更新航班失败";
+    QSqlDatabase db = DBManager::instance().db();
+    if (!db.transaction()) {
+        errorMsg = "无法开启事务";
+        qDebug() << errorMsg;
         return false;
     }
+
+    Airplane airplane = airplaneDao->getById(flight.airplaneId());
+    if (airplane.id() == 0) {
+        db.rollback();
+        errorMsg = "飞机不存在";
+        qDebug() << errorMsg;
+        return false;
+    }
+
+    Airport departAirport = airportDao->getById(flight.departAirportId());
+    Airport arriveAirport = airportDao->getById(flight.arriveAirportId());
+    if (departAirport.id() == 0 || arriveAirport.id() == 0) {
+        db.rollback();
+        errorMsg = "机场不存在";
+        qDebug() << errorMsg;
+        return false;
+    }
+
+    if (!flightDao->update(flight)) {
+        db.rollback();
+        errorMsg = "更新航班失败";
+        qDebug() << errorMsg;
+        return false;
+    }
+
+    const struct TicketSeed {
+        QString klass;
+        int seats;
+    } ticketSeeds[] = {
+        {QStringLiteral("economy"), airplane.seatsEconomy()},
+        {QStringLiteral("business"), airplane.seatsBusiness()},
+        {QStringLiteral("first"), airplane.seatsFirst()}
+    };
+
+    QList<Ticket> allTickets = ticketDao->getAll();
+    QMap<QString, Ticket> ticketByClass;
+    for (const Ticket& ticket : allTickets) {
+        if (ticket.flightId() == flight.id()) {
+            ticketByClass.insert(ticket.tClass(), ticket);
+        }
+    }
+
+    for (const TicketSeed& seed : ticketSeeds) {
+        const bool hasTicket = ticketByClass.contains(seed.klass);
+
+        if (seed.seats <= 0) {
+            if (hasTicket) {
+                const Ticket existing = ticketByClass.value(seed.klass);
+                const int sold = existing.totalSeats() - existing.remainSeats();
+                if (sold > 0) {
+                    db.rollback();
+                    errorMsg = QStringLiteral("%1舱位已有售票，无法移除").arg(seed.klass);
+                    qDebug() << errorMsg;
+                    return false;
+                }
+                if (!ticketDao->remove(existing.id())) {
+                    db.rollback();
+                    errorMsg = QStringLiteral("移除%1舱位失败").arg(seed.klass);
+                    qDebug() << errorMsg;
+                    return false;
+                }
+            }
+            continue;
+        }
+
+        if (hasTicket) {
+            Ticket existing = ticketByClass.value(seed.klass);
+            const int sold = existing.totalSeats() - existing.remainSeats();
+            if (sold > seed.seats) {
+                db.rollback();
+                errorMsg = QStringLiteral("%1舱位已售%2张，少于新座位数").arg(seed.klass).arg(sold);
+                qDebug() << errorMsg;
+                return false;
+            }
+            const int newRemain = seed.seats - sold;
+            existing.setTotalSeats(seed.seats);
+            existing.setRemainSeats(newRemain);
+            if (!ticketDao->update(existing)) {
+                db.rollback();
+                errorMsg = QStringLiteral("更新%1舱位失败").arg(seed.klass);
+                qDebug() << errorMsg;
+                return false;
+            }
+        } else {
+            Ticket ticket(0, flight.id(), seed.klass, 0.0, seed.seats, seed.seats);
+            if (ticketDao->insert(ticket) <= 0) {
+                db.rollback();
+                errorMsg = QStringLiteral("初始化%1舱位失败").arg(seed.klass);
+                qDebug() << errorMsg;
+                return false;
+            }
+        }
+    }
+
+    if (!db.commit()) {
+        db.rollback();
+        errorMsg = "提交事务失败";
+        qDebug() << errorMsg;
+        return false;
+    }
+
     return true;
 }
 
@@ -395,7 +550,8 @@ bool Backend::updateFlightStatus(int flightId, const QString& status) {
     return flightDao->update(flight);
 }
 
-int Backend::addAirplane(const Airplane& airplane) {
+int Backend::addAirplane(const QString& model, int seatsEconomy, int seatsBusiness, int seatsFirst) {
+    Airplane airplane(0, model, seatsEconomy, seatsBusiness, seatsFirst);
     return airplaneDao->insert(airplane);
 }
 
@@ -407,10 +563,12 @@ bool Backend::deleteAirplane(int airplaneId) {
     return airplaneDao->remove(airplaneId);
 }
 
-int Backend::addCity(const City& city) {
+int Backend::addCity(const QString& name, const QString& code, const QString& country) {
+    City city(0, name, code, country);
     return cityDao->insert(city);
 }
 
-int Backend::addAirport(const Airport& airport) {
+int Backend::addAirport(const QString& name, const QString& code, int cityId, int terminalCount) {
+    Airport airport(0, name, code, cityId, terminalCount);
     return airportDao->insert(airport);
 }
