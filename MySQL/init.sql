@@ -13,5 +13,6 @@ SOURCE airport.sql;
 SOURCE airplane.sql;
 SOURCE flight.sql;
 SOURCE ticket.sql;
+SOURCE user.sql;
 
 -- 完成

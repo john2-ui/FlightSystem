@@ -88,17 +88,26 @@ public:
         QString& errorMsg
     );
     
-    int addFlight(const Flight& flight, QString& errorMsg);
+    int addFlight(
+        const QString& flightNo,
+        int airplaneId,
+        int departAirportId,
+        int arriveAirportId,
+        const QDateTime& departTime,
+        const QDateTime& arriveTime,
+        const QString& status,
+        QString& errorMsg
+    );
     bool updateFlight(const Flight& flight, QString& errorMsg);
     bool deleteFlight(int flightId, QString& errorMsg);
     bool updateFlightStatus(int flightId, const QString& status);
     
-    int addAirplane(const Airplane& airplane);
+    int addAirplane(const QString& model, int seatsEconomy, int seatsBusiness, int seatsFirst);
     bool updateAirplane(const Airplane& airplane);
     bool deleteAirplane(int airplaneId);
     
-    int addCity(const City& city);
-    int addAirport(const Airport& airport);
+    int addCity(const QString& name, const QString& code, const QString& country);
+    int addAirport(const QString& name, const QString& code, int cityId, int terminalCount);
 
 private:
     Backend();

@@ -14,4 +14,5 @@ HEADERS += \
     AirportDao.h \
     CityDao.h \
     FlightDao.h \
-    TicketDao.h
+    TicketDao.h \
+    UserDao.h

@@ -18,6 +18,7 @@ SUBDIRS += \
     ui_admin \
     ui_client \
     dao    \
+    test    \
 
 # 配置文件
 DISTFILES += config/db.ini
