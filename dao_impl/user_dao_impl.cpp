@@ -14,8 +14,10 @@ int UserDaoImpl::insert(const User& user) {
     query.prepare("INSERT INTO user (username, password, tickets_id, isSuper) "
                   "VALUES (:username, :password, :tickets_id, :isSuper)");
     query.bindValue(":username", user.username());
-    query.bindValue(":password", user.password());
-    query.bindValue(":tickets_id", user.ticketsIDToString());
+    query.bindValue(":password", user.password()); 
+    //当空票单的时候也能注册
+    const QString ticketStr = user.ticketsIDToString();
+    query.bindValue(":tickets_id", ticketStr.isEmpty() ? QStringLiteral("") : ticketStr);
     query.bindValue(":isSuper", user.isSuper());   
 
     if (!query.exec()) {
@@ -32,8 +34,10 @@ bool UserDaoImpl::update(const User& user) {
                   "tickets_id=:tickets_id, isSuper=:isSuper WHERE id=:id");
 
     query.bindValue(":username", user.username());
-    query.bindValue(":password", user.password());
-    query.bindValue(":tickets_id", user.ticketsIDToString());
+    query.bindValue(":password", user.password()); 
+    //当空票单的时候也能注册
+    const QString ticketStr = user.ticketsIDToString();
+    query.bindValue(":tickets_id", ticketStr.isEmpty() ? QStringLiteral("") : ticketStr); 
     query.bindValue(":isSuper", user.isSuper());   
     query.bindValue(":id", user.id());
 
@@ -41,10 +45,8 @@ bool UserDaoImpl::update(const User& user) {
         qDebug() << "Update user failed:" << query.lastError();
         return false;
     }
-
     return query.numRowsAffected() > 0;
 }
-
 bool UserDaoImpl::remove(int id) {
     QSqlQuery query(m_db);
 

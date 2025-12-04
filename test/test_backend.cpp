@@ -134,6 +134,10 @@ void testBooking() {
         qDebug() << "该航班没有机票数据，跳过预订测试";
         return;
     }
+
+    // 测试环境默认新建航班状态为 scheduled，这里切换为 normal 以验证购票链路
+    backend.updateFlightStatus(testFlight.flightId, QStringLiteral("normal"));
+    testFlight = backend.getFlightDetail(testFlight.flightId);
     
     // 获取第一个舱位
     QString ticketClass = testFlight.tickets.keys().first();
@@ -338,7 +342,7 @@ void testUserWorkflows() {
     const QString username = QString("user_%1").arg(suffix);
     const QString password = QString("pwd_%1").arg(suffix);
 
-    bool registered = backend.registerUser(username, password, errorMsg);
+    bool registered = backend.registerUser(username, password, false, errorMsg);
     qDebug() << "注册用户" << username
              << (registered ? QStringLiteral("成功") : QStringLiteral("失败: ") + errorMsg);
     if (!registered) {
@@ -346,9 +350,10 @@ void testUserWorkflows() {
     }
 
     int userId = -1;
-    bool loginSuccess = backend.loginUser(username, password, userId, errorMsg);
+    bool isAdmin = false;
+    bool loginSuccess = backend.loginUser(username, password, userId, isAdmin, errorMsg);
     qDebug() << "登录状态:" << (loginSuccess ? QStringLiteral("成功") : QStringLiteral("失败: ") + errorMsg)
-             << "userId=" << userId;
+             << "userId=" << userId << "isAdmin=" << isAdmin;
     if (!loginSuccess || userId <= 0) {
         return;
     }
@@ -378,7 +383,7 @@ void testUserWorkflows() {
         airportIdB,
         departTime,
         arriveTime,
-        QStringLiteral("scheduled"),
+        QStringLiteral("normal"),
         errorMsg
     );
 
@@ -387,26 +392,42 @@ void testUserWorkflows() {
         return;
     }
 
+    // 预先占用一个座位，模拟已有乘客购买后的余票场景
+    QString seedPurchaseError;
+    bool seedBooked = backend.bookTicket(flightId, QStringLiteral("business"), 1, seedPurchaseError);
+    if (!seedBooked && !seedPurchaseError.isEmpty()) {
+        qDebug() << "预占余票失败:" << seedPurchaseError;
+    }
+
     FlightDetailInfo detail = backend.getFlightDetail(flightId);
     if (detail.tickets.isEmpty()) {
         qDebug() << "航班无票可卖";
         return;
     }
 
-    TicketInfo ticket = detail.tickets.first();
-    qDebug() << "使用票 ID:" << ticket.ticketId << "舱位:" << ticket.ticketClass;
+    TicketInfo ticket = detail.tickets.value(QStringLiteral("business"));
+    if (ticket.ticketId == 0) {
+        ticket = detail.tickets.first();
+    }
+    qDebug() << "使用票 ID:" << ticket.ticketId << "舱位:" << ticket.ticketClass
+             << "预留后余票:" << ticket.remainSeats;
 
-    // 3. 购票
-    bool purchaseOk = backend.purchaseTicket(userId, ticket.ticketId, 1, errorMsg);
+    // 3. 购票（购买两张已存在的票，验证重复 ticketId 的累计）
+    bool purchaseOk = backend.purchaseTicket(userId, ticket.ticketId, 2, errorMsg);
     qDebug() << "购票结果:" << (purchaseOk ? QStringLiteral("成功") : QStringLiteral("失败: ") + errorMsg);
     if (!purchaseOk) {
         return;
     }
 
     FlightDetailInfo afterPurchase = backend.getFlightDetail(flightId);
-    qDebug() << "购票后余票:" << afterPurchase.tickets[ticket.ticketClass].remainSeats;
+    int remainAfterPurchase = afterPurchase.tickets[ticket.ticketClass].remainSeats;
+    qDebug() << "购票后余票:" << remainAfterPurchase;
 
-    // 4. 退票
+    // 3.1 继续购票尝试超出余票
+    bool overBuy = backend.purchaseTicket(userId, ticket.ticketId, 100, errorMsg);
+    qDebug() << "超额购票结果:" << (overBuy ? QStringLiteral("成功") : QStringLiteral("失败: ") + errorMsg);
+
+    // 4. 退票（先退一张，确保 remain 恢复）
     bool refundOk = backend.refundTicket(userId, ticket.ticketId, 1, errorMsg);
     qDebug() << "退票结果:" << (refundOk ? QStringLiteral("成功") : QStringLiteral("失败: ") + errorMsg);
     if (!refundOk) {
@@ -416,7 +437,32 @@ void testUserWorkflows() {
     FlightDetailInfo afterRefund = backend.getFlightDetail(flightId);
     qDebug() << "退票后余票:" << afterRefund.tickets[ticket.ticketClass].remainSeats;
 
+    // 4.1 退还剩余的用户购票，确保票数归零
+    errorMsg.clear();
+    bool finalRefund = backend.refundTicket(userId, ticket.ticketId, 1, errorMsg);
+    if (!finalRefund) {
+        qDebug() << "额外退票提示:" << errorMsg;
+    }
+    if (seedBooked) {
+        QString cleanupErr;
+        backend.cancelBooking(flightId, ticket.ticketClass, 1, cleanupErr);
+        if (!cleanupErr.isEmpty()) {
+            qDebug() << "归还预占余票提示:" << cleanupErr;
+        }
+    }
+
+    FlightDetailInfo finalDetail = backend.getFlightDetail(flightId);
+    qDebug() << "清理后余票:" << finalDetail.tickets[ticket.ticketClass].remainSeats;
+
     // 5. 注销用户
     bool deleteOk = backend.deleteUser(userId, errorMsg);
     qDebug() << "删除用户结果:" << (deleteOk ? QStringLiteral("成功") : QStringLiteral("失败: ") + errorMsg);
+
+    if (deleteOk) {
+        int reloginId = -1;
+        bool reloginAdmin = false;
+        QString reloginErr;
+        bool relogin = backend.loginUser(username, password, reloginId, reloginAdmin, reloginErr);
+        qDebug() << "注销后再次登录:" << (relogin ? QStringLiteral("成功") : QStringLiteral("失败: ") + reloginErr);
+    }
 }

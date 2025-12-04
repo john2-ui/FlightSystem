@@ -575,7 +575,7 @@ int Backend::addAirport(const QString& name, const QString& code, int cityId, in
     return airportDao->insert(airport);
 }
 
-bool Backend::registerUser(const QString& username, const QString& password, QString& errorMsg) {
+bool Backend::registerUser(const QString& username, const QString& password, bool isAdmin, QString& errorMsg) {
     if (username.trimmed().isEmpty() || password.isEmpty()) {
         errorMsg = "用户名或密码不能为空";
         return false;
@@ -588,17 +588,19 @@ bool Backend::registerUser(const QString& username, const QString& password, QSt
     }
 
     QVector<int> emptyTickets;
-    User user(username, password, emptyTickets);
+    User user(username, password, emptyTickets, isAdmin ? 1 : 0);
     int userId = userDao->insert(user);
     if (userId <= 0) {
         errorMsg = "注册失败";
         return false;
     }
     return true;
-}
+} 
 
-bool Backend::loginUser(const QString& username, const QString& password, int& userId, QString& errorMsg) {
+
+bool Backend::loginUser(const QString& username, const QString& password, int& userId, bool& isAdmin, QString& errorMsg) {
     userId = -1;
+    isAdmin = false;
     if (username.trimmed().isEmpty() || password.isEmpty()) {
         errorMsg = "用户名或密码不能为空";
         return false;
@@ -610,12 +612,18 @@ bool Backend::loginUser(const QString& username, const QString& password, int& u
         return false;
     }
 
+    if (user.isSuper() < 0) {
+        errorMsg = "账号已注销";
+        return false;
+    }
+
     if (user.password() != password) {
         errorMsg = "密码错误";
         return false;
     }
 
     userId = user.id();
+    isAdmin = (user.isSuper() == 1);
     return true;
 }
 
@@ -624,8 +632,27 @@ bool Backend::deleteUser(int userId, QString& errorMsg) {
         errorMsg = "无效的用户ID";
         return false;
     }
-    if (!userDao->remove(userId)) {
-        errorMsg = "删除用户失败";
+    User user = userDao->getById(userId);
+    if (user.id() <= 0) {
+        errorMsg = "用户不存在";
+        return false;
+    }
+
+    if (user.isSuper() == 1) {
+        errorMsg = "管理员账号禁止注销";
+        return false;
+    }
+
+    const QString tombStone = QStringLiteral("%1#deleted_%2")
+                                  .arg(user.username())
+                                  .arg(QDateTime::currentMSecsSinceEpoch());
+    user.setUsername(tombStone);
+    user.setPassword(QStringLiteral(""));
+    user.setTicketsID({});
+    user.setIsSuper(-1);
+
+    if (!userDao->update(user)) {
+        errorMsg = "注销用户失败";
         return false;
     }
     return true;
@@ -638,7 +665,7 @@ bool Backend::purchaseTicket(int userId, int ticketId, int quantity, QString& er
     }
 
     User user = userDao->getById(userId);
-    if (user.id() <= 0) {
+    if (user.id() <= 0 || user.isSuper() < 0) {
         errorMsg = "用户不存在";
         return false;
     }
@@ -681,7 +708,7 @@ bool Backend::purchaseTicket(int userId, int ticketId, int quantity, QString& er
 
     return true;
 }
-
+//同一人购买同一仓位多张票的ticketId是相同的
 bool Backend::refundTicket(int userId, int ticketId, int quantity, QString& errorMsg) {
     if (userId <= 0 || ticketId <= 0 || quantity <= 0) {
         errorMsg = "参数无效";
@@ -689,7 +716,7 @@ bool Backend::refundTicket(int userId, int ticketId, int quantity, QString& erro
     }
 
     User user = userDao->getById(userId);
-    if (user.id() <= 0) {
+    if (user.id() <= 0 || user.isSuper() < 0) {
         errorMsg = "用户不存在";
         return false;
     }
