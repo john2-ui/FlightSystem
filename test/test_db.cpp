@@ -134,14 +134,15 @@ int main(int argc, char *argv[])
     QVector<int> userTickets;
     userTickets.append(ticketId); // 假设用户购买了刚才插入的票
 
-    User u("tom", "123456", userTickets);
+    User u("tom", "123456", userTickets, 0);
     int userId = userDao.insert(u);
     qDebug() << "Inserted user id =" << userId;
 
     // Query
     User user = userDao.getById(userId);
     qDebug() << "Query user username:" << user.username()
-            << ", ticketsID:" << user.ticketsID();
+            << ", ticketsID:" << user.ticketsID()
+            << ", isSuper:" << user.isSuper();
 
     // Update
     user.setPassword("654321");
@@ -149,12 +150,14 @@ int main(int argc, char *argv[])
     userDao.update(user);
     User updatedUser = userDao.getById(userId);
     qDebug() << "Updated user password:" << updatedUser.password()
-            << ", ticketsID:" << updatedUser.ticketsID();
+            << ", ticketsID:" << updatedUser.ticketsID()
+            << ", isSuper:" << user.isSuper();
 
     // Query by username
     User userByName = userDao.getByUsername("tom");
     qDebug() << "Query by username, id:" << userByName.id()
-            << ", ticketsID:" << userByName.ticketsID();
+            << ", ticketsID:" << userByName.ticketsID()
+            << ", isSuper:" << user.isSuper();
 
 
     // ============================
