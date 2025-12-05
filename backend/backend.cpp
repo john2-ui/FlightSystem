@@ -17,6 +17,7 @@ Backend::Backend() {
     airplaneDao = new AirplaneDaoImpl();
     flightDao = new FlightDaoImpl();
     ticketDao = new TicketDaoImpl();
+    userDao = new UserDaoImpl();
     
     qDebug() << "Backend 初始化完成";
 }
@@ -27,6 +28,7 @@ Backend::~Backend() {
     delete airplaneDao;
     delete flightDao;
     delete ticketDao;
+    delete userDao;
 }
 
 QList<City> Backend::getAllCities() {
@@ -571,4 +573,197 @@ int Backend::addCity(const QString& name, const QString& code, const QString& co
 int Backend::addAirport(const QString& name, const QString& code, int cityId, int terminalCount) {
     Airport airport(0, name, code, cityId, terminalCount);
     return airportDao->insert(airport);
+}
+
+bool Backend::registerUser(const QString& username, const QString& password, bool isAdmin, QString& errorMsg) {
+    if (username.trimmed().isEmpty() || password.isEmpty()) {
+        errorMsg = "用户名或密码不能为空";
+        return false;
+    }
+
+    User existing = userDao->getByUsername(username);
+    if (existing.id() > 0) {
+        errorMsg = "用户名已存在";
+        return false;
+    }
+
+    QVector<int> emptyTickets;
+    User user(username, password, emptyTickets, isAdmin ? 1 : 0);
+    int userId = userDao->insert(user);
+    if (userId <= 0) {
+        errorMsg = "注册失败";
+        return false;
+    }
+    return true;
+} 
+
+
+bool Backend::loginUser(const QString& username, const QString& password, int& userId, bool& isAdmin, QString& errorMsg) {
+    userId = -1;
+    isAdmin = false;
+    if (username.trimmed().isEmpty() || password.isEmpty()) {
+        errorMsg = "用户名或密码不能为空";
+        return false;
+    }
+
+    User user = userDao->getByUsername(username);
+    if (user.id() <= 0) {
+        errorMsg = "用户不存在";
+        return false;
+    }
+
+    if (user.isSuper() < 0) {
+        errorMsg = "账号已注销";
+        return false;
+    }
+
+    if (user.password() != password) {
+        errorMsg = "密码错误";
+        return false;
+    }
+
+    userId = user.id();
+    isAdmin = (user.isSuper() == 1);
+    return true;
+}
+
+bool Backend::deleteUser(int userId, QString& errorMsg) {
+    if (userId <= 0) {
+        errorMsg = "无效的用户ID";
+        return false;
+    }
+    User user = userDao->getById(userId);
+    if (user.id() <= 0) {
+        errorMsg = "用户不存在";
+        return false;
+    }
+
+    if (user.isSuper() == 1) {
+        errorMsg = "管理员账号禁止注销";
+        return false;
+    }
+
+    const QString tombStone = QStringLiteral("%1#deleted_%2")
+                                  .arg(user.username())
+                                  .arg(QDateTime::currentMSecsSinceEpoch());
+    user.setUsername(tombStone);
+    user.setPassword(QStringLiteral(""));
+    user.setTicketsID({});
+    user.setIsSuper(-1);
+
+    if (!userDao->update(user)) {
+        errorMsg = "注销用户失败";
+        return false;
+    }
+    return true;
+}
+
+bool Backend::purchaseTicket(int userId, int ticketId, int quantity, QString& errorMsg) {
+    if (userId <= 0 || ticketId <= 0 || quantity <= 0) {
+        errorMsg = "参数无效";
+        return false;
+    }
+
+    User user = userDao->getById(userId);
+    if (user.id() <= 0 || user.isSuper() < 0) {
+        errorMsg = "用户不存在";
+        return false;
+    }
+
+    Ticket ticket = ticketDao->getById(ticketId);
+    if (ticket.id() <= 0) {
+        errorMsg = "票不存在";
+        return false;
+    }
+
+    Flight flight = flightDao->getById(ticket.flightId());
+    if (flight.id() <= 0) {
+        errorMsg = "关联航班不存在";
+        return false;
+    }
+
+    if (!checkTicketAvailability(flight.id(), ticket.tClass(), quantity)) {
+        errorMsg = "余票不足";
+        return false;
+    }
+
+    QString bookError;
+    if (!bookTicket(flight.id(), ticket.tClass(), quantity, bookError)) {
+        errorMsg = bookError;
+        return false;
+    }
+
+    QVector<int> tickets = user.ticketsID();
+    for (int i = 0; i < quantity; ++i) {
+        tickets.append(ticket.id());
+    }
+    user.setTicketsID(tickets);
+
+    if (!userDao->update(user)) {
+        QString rollbackError;
+        cancelBooking(flight.id(), ticket.tClass(), quantity, rollbackError);
+        errorMsg = "更新用户票信息失败";
+        return false;
+    }
+
+    return true;
+}
+//同一人购买同一仓位多张票的ticketId是相同的
+bool Backend::refundTicket(int userId, int ticketId, int quantity, QString& errorMsg) {
+    if (userId <= 0 || ticketId <= 0 || quantity <= 0) {
+        errorMsg = "参数无效";
+        return false;
+    }
+
+    User user = userDao->getById(userId);
+    if (user.id() <= 0 || user.isSuper() < 0) {
+        errorMsg = "用户不存在";
+        return false;
+    }
+
+    Ticket ticket = ticketDao->getById(ticketId);
+    if (ticket.id() <= 0) {
+        errorMsg = "票不存在";
+        return false;
+    }
+
+    QVector<int> tickets = user.ticketsID();
+    int owned = 0;
+    for (int id : tickets) {
+        if (id == ticketId) {
+            ++owned;
+        }
+    }
+
+    if (owned < quantity) {
+        errorMsg = "用户没有足够的票可退";
+        return false;
+    }
+
+    QString refundError;
+    if (!cancelBooking(ticket.flightId(), ticket.tClass(), quantity, refundError)) {
+        errorMsg = refundError;
+        return false;
+    }
+
+    int removed = 0;
+    QVector<int> updated;
+    updated.reserve(tickets.size() - quantity);
+    for (int id : tickets) {
+        if (id == ticketId && removed < quantity) {
+            ++removed;
+            continue;
+        }
+        updated.append(id);
+    }
+    user.setTicketsID(updated);
+
+    if (!userDao->update(user)) {
+        QString revertErr;
+        bookTicket(ticket.flightId(), ticket.tClass(), quantity, revertErr);
+        errorMsg = "更新用户票信息失败";
+        return false;
+    }
+
+    return true;
 }

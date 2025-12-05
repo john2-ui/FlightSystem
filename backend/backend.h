@@ -12,6 +12,7 @@
 #include "../dao_impl/airplane_dao_impl.h"
 #include "../dao_impl/flight_dao_impl.h"
 #include "../dao_impl/ticket_dao_impl.h"
+#include "../dao_impl/user_dao_impl.h"
 
 struct TicketInfo {
     int ticketId;
@@ -109,6 +110,13 @@ public:
     int addCity(const QString& name, const QString& code, const QString& country);
     int addAirport(const QString& name, const QString& code, int cityId, int terminalCount);
 
+    // 用户相关接口
+    bool registerUser(const QString& username, const QString& password, bool isAdmin, QString& errorMsg);
+    bool loginUser(const QString& username, const QString& password, int& userId, bool& isAdmin, QString& errorMsg);
+    bool deleteUser(int userId, QString& errorMsg);
+    bool purchaseTicket(int userId, int ticketId, int quantity, QString& errorMsg);
+    bool refundTicket(int userId, int ticketId, int quantity, QString& errorMsg);
+
 private:
     Backend();
     ~Backend();
@@ -118,6 +126,7 @@ private:
     AirplaneDaoImpl* airplaneDao;
     FlightDaoImpl* flightDao;
     TicketDaoImpl* ticketDao;
+    UserDaoImpl* userDao;
 };
 
 #endif // BACKEND_H

@@ -1,4 +1,195 @@
- 
+# FlightSystem 架构与业务说明
+
+本项目面向航班与票务管理，采用分层架构。当前代码包含用户注册/登录/注销、航班票务自动初始化、购票/退票一致性控制等核心能力，并配备测试工程验证关键流程。
+
+---
+
+## 1. 目录结构
+
+```
+FlightSystem/
+├── model/        数据模型定义（City/Airport/Airplane/Flight/Ticket/User）
+├── dao/          DAO 接口定义
+├── dao_impl/     DAO 实现（与数据库交互）
+├── db/           DBManager 单例，统一数据库连接
+├── backend/      业务逻辑层（航班/票务/用户服务）
+├── ui_admin/     管理端 Qt 界面
+├── ui_client/    客户端 Qt 界面（占位）
+├── test/         测试程序（含综合测试、基础功能回归）
+├── config/       配置文件（db.ini）
+└── MySQL/        建库建表脚本
+```
+
+---
+
+## 2. 核心数据模型（`model/`）
+
+| 模型      | 说明 | 关键字段 |
+|-----------|------|-----------|
+| `City`    | 城市 | `id`, `name`, `code`, `country` |
+| `Airport` | 机场 | `id`, `name`, `code`, `cityId`, `terminalCount` |
+| `Airplane`| 飞机 | `id`, `model`, `seatsEconomy`, `seatsBusiness`, `seatsFirst` |
+| `Flight`  | 航班 | `id`, `flightNo`, `airplaneId`, `departAirportId`, `arriveAirportId`, `departTime`, `arriveTime`, `status` |
+| `Ticket`  | 票   | `id`, `flightId`, `class`, `price`, `totalSeats`, `remainSeats` |
+| `User`    | 用户 | `id`, `username`, `password`, `ticketsID`（`QVector<int>`），`isSuper`（1=管理员，0=普通用户，负值=已注销） |
+
+> `User::ticketsID()` 序列化为逗号分隔字符串写入 `user.tickets_id`。空票单写回空字符串以满足数据库 `NOT NULL` 约束。
+
+---
+
+## 3. 数据库管理（`db/`）
+
+- `DBManager` 使用 C++11 局部静态单例，集中管理 `QSqlDatabase` 连接。
+- 读取 `config/db.ini`：
+  ```ini
+  [database]
+  host=127.0.0.1
+  port=3306
+  user=root
+  password=***
+  database=flightsystem
+  ```
+- 默认工作目录位于构建输出目录，`DBManager` 会按相对路径回溯找到 `config/db.ini`。
+
+数据库初始化可使用：
+```sql
+SOURCE C:/Users/15056/Desktop/code/FlightSystem/MySQL/init.sql;
+-- 或依次执行 city.sql、airport.sql、airplane.sql、flight.sql、ticket.sql、user.sql
+```
+
+---
+
+## 4. DAO 层（接口与实现）
+
+- `dao/` 定义纯虚接口，例如 `FlightDao`, `TicketDao`, `UserDao`。
+- `dao_impl/` 提供 MySQL 实现：
+  - 查询与写入使用 `QSqlQuery`。
+  - `user_dao_impl.cpp` 在插入/更新时，将空票单写为 `""`，避免触发 `tickets_id` 的非空约束。
+  - `ticket_dao_impl.cpp` 使用自增主键，`TicketDaoImpl::insert` 返回 `lastInsertId()`。
+
+DAO 实现输出静态库，供 `backend` 与测试链接使用。
+
+---
+
+## 5. Backend 业务逻辑
+
+### 5.1 通用服务
+- 城市/机场/飞机增删改查调用对应 DAO。
+- `Backend::instance()` 单例持有所有 DAO 实例。
+
+### 5.2 航班与票务
+- `addFlight(...)`：
+  1. 校验飞机与机场存在。
+  2. 插入航班记录。
+  3. 根据飞机座位数自动为经济/商务/头等舱初始化票（`Ticket`），总座位与余票相同。
+- `updateFlight(const Flight&)`：同步座位数调整，处理已有售票的舱位，必要时回滚。
+- `bookTicket(flightId, class, quantity, errorMsg)`：
+  - 检查航班状态必须为 `"normal"`。
+  - 使用事务扣减余票，失败则回滚。
+- `cancelBooking(...)`：退回余票，亦使用事务保障一致性。
+
+### 5.3 用户流程
+- `registerUser(username, password, isAdmin, errorMsg)`：
+  - 校验重名。
+  - 插入 `user` 表，初始票列表为空串，`isSuper`=1 表示管理员。
+- `loginUser(...)`：判断账号存在、未注销、密码匹配，返回 `userId` 与 `isAdmin` 标志。
+- `deleteUser(userId, errorMsg)`（软删除）：
+  - 禁止删除管理员。
+  - 用户名改为 `原名#deleted_<timestamp>`。
+  - 密码置为空串，票列表清空，`isSuper=-1`。
+- `purchaseTicket(userId, ticketId, quantity, errorMsg)`：
+  1. 加载用户、票、航班，确认有效且未注销。
+  2. 通过 `bookTicket` 扣减余票（航班需为 `"normal"`）。
+  3. 将 `ticketId` 重复追加到用户 `ticketsID()`。
+  4. 更新 `user` 表，失败则调用 `cancelBooking` 回滚座位。
+- `refundTicket(userId, ticketId, quantity, errorMsg)`：
+  1. 检查用户持有票数量是否足够。
+  2. 先调用 `cancelBooking` 释放座位。
+  3. 从用户票列表移除相应次数的 `ticketId`，更新数据库，若失败则重新 `bookTicket` 补回座位。
+
+> 一个航班的每种舱位为一条 `ticket` 记录。同一用户购买同一舱位多张票会在 `tickets_id` 中重复存储同一个 `ticketId`。
+
+---
+
+## 6. 购票前端交互建议
+
+1. 前端根据查询条件调用 `Backend::searchFlights` 或 `getFlightDetail` 获取 `FlightDetailInfo`。
+2. UI 展示航班号、时间、舱位、余票、价格等信息。
+3. 用户选择舱位和数量，前端将对应的 `ticketId` 与数量传入 `purchaseTicket`。
+4. 购票完成后刷新航班详情即可看到最新余票。
+
+> 乘客不直接输入 `flightId` / `ticketId`，这些 ID 由前端从 API 返回的结构中获取并透传。
+
+---
+
+## 7. 测试工程与执行
+
+### 7.1 `test/test_backend.cpp`
+涵盖：
+- 基础数据查询。
+- 航班搜索。
+- 机票预订（含状态切换、余票检查、取消预订）。
+- 管理员增删改功能。
+- `addFlight` 字段接口自动初始化票务。
+- 用户全流程：注册 → 登录 → 构造航班 → 预占余票 → 购票（含重复 ID 与超额校验）→ 退票 → 软删除用户 → 注销后登录失败。
+
+### 7.2 `test/test_backend_basic.cpp`
+- 聚焦最小闭环：航班初始化、票务校验、用户购票/退票、软删除。
+
+### 7.3 Qt 构建说明
+- 主工程：`FlightSystem.pro`（`TEMPLATE = subdirs`）。
+- 测试专用工程：`test/test.pro`
+  ```qmake
+  QT += core sql
+  CONFIG += console c++17
+  TEMPLATE = app
+  SOURCES += test_backend.cpp    # 或 test_backend_basic.cpp
+  INCLUDEPATH += ../model ../dao ../dao_impl ../backend ../db
+  LIBS += -L$$PWD/../build/lib -lbackend -ldao_impl -ldb -lmodel
+  ```
+- 修改 DAO / Backend 后需重新构建对应静态库（Clean & Rebuild `dao_impl`, `backend`），避免链接旧版本。
+
+---
+
+## 8. 数据库脚本与注意事项
+
+1. 初始化：使用 `MySQL/init.sql` 或 `init_complete.sql` 构建 `flightsystem` 库与所有表。
+2. `tickets_id` 字段定义为 `TEXT NOT NULL`，必须写入空字符串而非 `NULL`。
+3. `user` 表结构：
+   ```sql
+   CREATE TABLE user (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       username VARCHAR(255) UNIQUE NOT NULL,
+       password VARCHAR(255) NOT NULL,
+       tickets_id TEXT NOT NULL,
+       isSuper TINYINT NOT NULL DEFAULT 0
+   );
+   ```
+4. 软删除后账号将在登录时返回 "账号已注销"。
+
+---
+
+## 9. 常见问题
+
+| 问题 | 处理方式 |
+|------|----------|
+| `tickets_id` 写入 NULL | 确认 `userDaoImpl` 的插入/更新逻辑在空票单时写入 `""`；重新构建 `dao_impl` 库。 |
+| `航班状态异常: scheduled` | 在购票前使用 `updateFlightStatus(flightId, "normal")`；或在创建航班时直接传 `"normal"`。 |
+| 测试链接旧库 | 对 `dao_impl`/`backend` 执行 Clean + Rebuild。 |
+| 找不到 `city.sql` 等 | 使用绝对路径 `SOURCE C:/.../MySQL/city.sql;`。 |
+| `db.ini` 未找到 | 确保配置文件位于仓库 `config/`，且运行目录相对于 `DBManager` 的路径解析正确。 |
+
+---
+
+## 10. 关键流程总结
+
+1. **航班新增**：`addFlight` → 自动插票 → 票务初始化完成。
+2. **航班更新**：`updateFlight` → 校验售票数量 → 同步舱位增删。
+3. **购票**：`purchaseTicket` → 状态校验 → 扣座 → 更新 `user.tickets_id` → 失败回滚。
+4. **退票**：`refundTicket` → 数量校验 → 增座 → 更新 `user.tickets_id` → 出错补偿。
+5. **用户注销**：软删除 → 用户名加墓碑、密码置空串、票清空、`isSuper=-1`。
+
+这份文档覆盖了当前代码的主要组件、依赖关系、关键流程和测试方法，可作为后续开发与联调的参考手册。 
 
 
 

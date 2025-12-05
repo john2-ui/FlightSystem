@@ -20,6 +20,9 @@ SUBDIRS += \
     dao    \
     test    \
 
+# 确保测试可执行文件在依赖库之后构建
+test.depends = backend
+
 # 配置文件
 DISTFILES += config/db.ini
 
