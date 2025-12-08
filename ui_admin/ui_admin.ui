@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1000</width>
-    <height>700</height>
+    <height>843</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -153,7 +153,7 @@ QGroupBox::title {
     <item>
      <widget class="QStackedWidget" name="mainStackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page_addflight">
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -174,15 +174,15 @@ QGroupBox::title {
         </property>
         <item>
          <widget class="QLabel" name="label">
+          <property name="styleSheet">
+           <string notr="true">font-size: 18pt;
+font-weight: bold; color: #2c3e50; padding: 10px;</string>
+          </property>
           <property name="text">
            <string>添加新航班</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font-size: 18pt;
-font-weight: bold; color: #2c3e50; padding: 10px;</string>
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -204,6 +204,12 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
            </item>
            <item row="0" column="1">
             <widget class="QLineEdit" name="flightNo">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="placeholderText">
               <string>例如: CA1234</string>
              </property>
@@ -333,7 +339,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           <item>
            <spacer name="horizontalSpacer">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -345,21 +351,21 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           </item>
           <item>
            <widget class="QPushButton" name="btn_addflight">
-            <property name="text">
-             <string>添加航班</string>
-            </property>
             <property name="minimumSize">
              <size>
-              <width>150</width>
+              <width>140</width>
               <height>40</height>
              </size>
+            </property>
+            <property name="text">
+             <string>添加航班</string>
             </property>
            </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_2">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -374,7 +380,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
         <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Orientation::Vertical</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -405,15 +411,15 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
         </property>
         <item>
          <widget class="QLabel" name="label_29">
+          <property name="styleSheet">
+           <string notr="true">font-size: 18pt;
+font-weight: bold; color: #2c3e50; padding: 10px;</string>
+          </property>
           <property name="text">
            <string>更新航班信息</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font-size: 18pt;
-font-weight: bold; color: #2c3e50; padding: 10px;</string>
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -479,7 +485,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
            <bool>true</bool>
           </property>
           <property name="selectionBehavior">
-           <enum>QAbstractItemView::SelectRows</enum>
+           <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
           </property>
          </widget>
         </item>
@@ -501,6 +507,12 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
            </item>
            <item row="0" column="1">
             <widget class="QSpinBox" name="updateflightID">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="maximum">
               <number>999999</number>
              </property>
@@ -514,12 +526,19 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
             </widget>
            </item>
            <item row="0" column="3">
-            <widget class="QLineEdit" name="updateflightNo"/>
+            <widget class="QLineEdit" name="updateflightNo">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
            </item>
            <item row="1" column="0">
             <widget class="QLabel" name="label_31">
              <property name="text">
-              <string>值飞飞机:</string>
+              <string>值班飞机:</string>
              </property>
             </widget>
            </item>
@@ -635,7 +654,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           <item>
            <spacer name="horizontalSpacer_3">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -647,21 +666,21 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           </item>
           <item>
            <widget class="QPushButton" name="btn_updateflight">
-            <property name="text">
-             <string>更新航班</string>
-            </property>
             <property name="minimumSize">
              <size>
-              <width>150</width>
+              <width>140</width>
               <height>40</height>
              </size>
+            </property>
+            <property name="text">
+             <string>更新航班</string>
             </property>
            </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_4">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -694,15 +713,15 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
         </property>
         <item>
          <widget class="QLabel" name="label_38">
+          <property name="styleSheet">
+           <string notr="true">font-size: 18pt;
+font-weight: bold; color: #2c3e50; padding: 10px;</string>
+          </property>
           <property name="text">
            <string>删除航班</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font-size: 18pt;
-font-weight: bold; color: #2c3e50; padding: 10px;</string>
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -768,7 +787,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
            <bool>true</bool>
           </property>
           <property name="selectionBehavior">
-           <enum>QAbstractItemView::SelectRows</enum>
+           <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
           </property>
          </widget>
         </item>
@@ -790,11 +809,11 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
            </item>
            <item row="0" column="1">
             <widget class="QSpinBox" name="deleteflightID">
-             <property name="maximum">
-              <number>999999</number>
-             </property>
              <property name="readOnly">
               <bool>false</bool>
+             </property>
+             <property name="maximum">
+              <number>999999</number>
              </property>
             </widget>
            </item>
@@ -904,7 +923,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           <item>
            <spacer name="horizontalSpacer_5">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -916,21 +935,21 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           </item>
           <item>
            <widget class="QPushButton" name="deleteflight">
-            <property name="text">
-             <string>删除航班</string>
-            </property>
             <property name="minimumSize">
              <size>
-              <width>150</width>
+              <width>140</width>
               <height>40</height>
              </size>
+            </property>
+            <property name="text">
+             <string>删除航班</string>
             </property>
            </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_6">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -963,15 +982,15 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
         </property>
         <item>
          <widget class="QLabel" name="label_2">
+          <property name="styleSheet">
+           <string notr="true">font-size: 18pt;
+font-weight: bold; color: #2c3e50; padding: 10px;</string>
+          </property>
           <property name="text">
            <string>添加新飞机</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font-size: 18pt;
-font-weight: bold; color: #2c3e50; padding: 10px;</string>
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -1048,7 +1067,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           <item>
            <spacer name="horizontalSpacer_7">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -1060,21 +1079,21 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           </item>
           <item>
            <widget class="QPushButton" name="btn_addplane">
-            <property name="text">
-             <string>添加飞机</string>
-            </property>
             <property name="minimumSize">
              <size>
-              <width>150</width>
+              <width>140</width>
               <height>40</height>
              </size>
+            </property>
+            <property name="text">
+             <string>添加飞机</string>
             </property>
            </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_8">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -1089,7 +1108,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
         <item>
          <spacer name="verticalSpacer_2">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Orientation::Vertical</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -1120,15 +1139,15 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
         </property>
         <item>
          <widget class="QLabel" name="label_7">
+          <property name="styleSheet">
+           <string notr="true">font-size: 18pt; font-weight: bold;
+color: #2c3e50; padding: 10px;</string>
+          </property>
           <property name="text">
            <string>更新飞机信息</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font-size: 18pt; font-weight: bold;
-color: #2c3e50; padding: 10px;</string>
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -1215,7 +1234,7 @@ color: #2c3e50; padding: 10px;</string>
           <item>
            <spacer name="horizontalSpacer_9">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -1227,21 +1246,21 @@ color: #2c3e50; padding: 10px;</string>
           </item>
           <item>
            <widget class="QPushButton" name="btn_updateplane">
-            <property name="text">
-             <string>更新飞机</string>
-            </property>
             <property name="minimumSize">
              <size>
-              <width>150</width>
+              <width>140</width>
               <height>40</height>
              </size>
+            </property>
+            <property name="text">
+             <string>更新飞机</string>
             </property>
            </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_10">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -1256,7 +1275,7 @@ color: #2c3e50; padding: 10px;</string>
         <item>
          <spacer name="verticalSpacer_3">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Orientation::Vertical</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -1287,15 +1306,15 @@ color: #2c3e50; padding: 10px;</string>
         </property>
         <item>
          <widget class="QLabel" name="label_13">
+          <property name="styleSheet">
+           <string notr="true">font-size: 18pt;
+font-weight: bold; color: #2c3e50; padding: 10px;</string>
+          </property>
           <property name="text">
            <string>删除飞机</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font-size: 18pt;
-font-weight: bold; color: #2c3e50; padding: 10px;</string>
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -1386,7 +1405,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           <item>
            <spacer name="horizontalSpacer_11">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -1398,21 +1417,21 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           </item>
           <item>
            <widget class="QPushButton" name="btn_deleteplane">
-            <property name="text">
-             <string>删除飞机</string>
-            </property>
             <property name="minimumSize">
              <size>
-              <width>150</width>
+              <width>140</width>
               <height>40</height>
              </size>
+            </property>
+            <property name="text">
+             <string>删除飞机</string>
             </property>
            </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_12">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -1427,7 +1446,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
         <item>
          <spacer name="verticalSpacer_4">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Orientation::Vertical</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -1458,15 +1477,15 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
         </property>
         <item>
          <widget class="QLabel" name="label_24">
+          <property name="styleSheet">
+           <string notr="true">font-size: 18pt;
+font-weight: bold; color: #2c3e50; padding: 10px;</string>
+          </property>
           <property name="text">
            <string>添加新机场</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font-size: 18pt;
-font-weight: bold; color: #2c3e50; padding: 10px;</string>
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -1542,7 +1561,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           <item>
            <spacer name="horizontalSpacer_13">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -1554,21 +1573,21 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           </item>
           <item>
            <widget class="QPushButton" name="btn_addairport">
-            <property name="text">
-             <string>添加机场</string>
-            </property>
             <property name="minimumSize">
              <size>
-              <width>150</width>
+              <width>140</width>
               <height>40</height>
              </size>
+            </property>
+            <property name="text">
+             <string>添加机场</string>
             </property>
            </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_14">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -1583,7 +1602,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
         <item>
          <spacer name="verticalSpacer_5">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Orientation::Vertical</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -1614,14 +1633,14 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
         </property>
         <item>
          <widget class="QLabel" name="label_48">
+          <property name="styleSheet">
+           <string notr="true">font-size: 18pt; font-weight: bold; color: #2c3e50; padding: 10px;</string>
+          </property>
           <property name="text">
            <string>添加新城市</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font-size: 18pt; font-weight: bold; color: #2c3e50; padding: 10px;</string>
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -1684,7 +1703,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           <item>
            <spacer name="horizontalSpacer_15">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -1696,21 +1715,21 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           </item>
           <item>
            <widget class="QPushButton" name="btn_addcity">
-            <property name="text">
-             <string>添加城市</string>
-            </property>
             <property name="minimumSize">
              <size>
-              <width>150</width>
+              <width>140</width>
               <height>40</height>
              </size>
+            </property>
+            <property name="text">
+             <string>添加城市</string>
             </property>
            </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_16">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -1725,7 +1744,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
         <item>
          <spacer name="verticalSpacer_6">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Orientation::Vertical</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -1747,7 +1766,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>30</height>
+     <height>46</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">

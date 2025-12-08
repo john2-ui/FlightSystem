@@ -391,6 +391,12 @@ void ui_admin::on_updateflightTable_cellClicked(int row, int column)
     } else {
         ui->rbtn_scheduled_update->setChecked(true);
     }
+    //设置余票
+    // int tickets=0;
+    // foreach (auto& ticket,flight.tickets) {
+    //     tickets+=ticket.remainSeats;
+    // }
+    // ui->updateflighttickets->setValue(tickets);
 }
 
 void ui_admin::on_btn_updateflight_clicked()
