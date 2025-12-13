@@ -30,12 +30,14 @@ DBManager::DBManager() {
            << "database:" << database;
 
 
-  m_db = QSqlDatabase::addDatabase("QMYSQL");
+//  m_db = QSqlDatabase::addDatabase("QMYSQL");
+  m_db = QSqlDatabase::addDatabase("QODBC");
   m_db.setHostName(host);
   m_db.setPort(port);
   m_db.setUserName(user);
   m_db.setPassword(password);
   m_db.setDatabaseName(database);
+
 
   if (!m_db.open()) {
     qDebug() << "数据库连接失败:" << m_db.lastError().text() ;

@@ -68,7 +68,12 @@ User UserDaoImpl::getById(int id) {
     query.bindValue(":id", id);
     query.exec();
 
+    if(!query.exec()){
+        qDebug()<<"查询失败";
+    }
+
     if (query.next()) {
+        qDebug()<<"找到用户";
         return User(
             query.value(0).toInt(),                         // id
             query.value(1).toString(),                      // username
@@ -77,8 +82,10 @@ User UserDaoImpl::getById(int id) {
             query.value(4).toInt()                          // isSuper
         );
     }
-
-    return User();  // empty
+    else{
+        qDebug()<<"没找到用户";
+        return User();
+    }
 }
 
 User UserDaoImpl::getByUsername(const QString& username) {
@@ -87,8 +94,11 @@ User UserDaoImpl::getByUsername(const QString& username) {
                   "FROM user WHERE username=:username");
     query.bindValue(":username", username);
     query.exec();
-
+    if(!query.exec()){
+        qDebug()<<"查询失败";
+    }
     if (query.next()) {
+        qDebug()<<"找到用户";
         return User(
             query.value(0).toInt(),
             query.value(1).toString(),
@@ -97,8 +107,12 @@ User UserDaoImpl::getByUsername(const QString& username) {
             query.value(4).toInt()   // isSuper
         );
     }
+    else{
+        qDebug()<<"没找到用户";
+        return User();
+    }
 
-    return User();
+
 }
 
 QList<User> UserDaoImpl::getAll() {
