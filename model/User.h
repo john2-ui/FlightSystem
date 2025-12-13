@@ -27,8 +27,7 @@ public:
         m_username(username),
         m_password(password),
         m_ticketsID(ticketsID),
-        m_isSuper(isSuper)
-         {}
+        m_isSuper(isSuper) {}
 
     // Getters
     int id() const { return m_id; }
@@ -47,6 +46,9 @@ public:
 
         // 将 ticketsID 序列化为 "1,3,5,7"
     QString ticketsIDToString() const {
+        if(m_ticketsID.isEmpty()){
+            return "-1";
+        }
         QStringList list;
         for (int id : m_ticketsID) {
             list << QString::number(id);

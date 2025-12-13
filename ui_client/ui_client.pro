@@ -1,4 +1,4 @@
-QT += core sql
+QT += core gui widgets sql
 CONFIG += c++17 staticlib
 TEMPLATE = lib
 
@@ -8,7 +8,20 @@ TARGET = ui_client
 # ⭐ 所有平台统一输出到 bin 目录（windows + macos）
 DESTDIR = $$PWD/../build/lib
 
-INCLUDEPATH += $$PWD
+INCLUDEPATH += \
+    $$PWD/../app
 
-SOURCES += dummy.cpp
-HEADERS += dummy.h
+
+
+SOURCES += \
+    ui_client.cpp
+
+HEADERS += \
+    ui_client.h \
+    ui_ui_client.h
+
+
+FORMS += \
+    ui_client.ui
+
+

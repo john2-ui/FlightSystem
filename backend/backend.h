@@ -26,20 +26,20 @@ struct TicketInfo {
 struct FlightDetailInfo {
     int flightId;
     QString flightNo;
-    
+
     QString departCityName;
     QString departAirportName;
     QString departAirportCode;
     QDateTime departTime;
-    
+
     QString arriveCityName;
     QString arriveAirportName;
     QString arriveAirportCode;
     QDateTime arriveTime;
-    
+
     QString airplaneModel;
     QString status;
-    
+
     QMap<QString, TicketInfo> tickets;
 };
 
@@ -47,48 +47,48 @@ class Backend
 {
 public:
     static Backend& instance();
-     
+
     QList<City> getAllCities();
     City getCityById(int id);
     City getCityByCode(const QString& code);
-    
+
     QList<Airport> getAllAirports();
     Airport getAirportById(int id);
     Airport getAirportByCode(const QString& code);
     QList<Airport> getAirportsByCity(int cityId);
-    
+
     QList<Airplane> getAllAirplanes();
     Airplane getAirplaneById(int id);
-    
+
     QList<FlightDetailInfo> searchFlights(
         const QString& fromCityCode,
         const QString& toCityCode,
         const QDate& date
-    );
-    
+        );
+
     FlightDetailInfo getFlightDetail(int flightId);
     QList<FlightDetailInfo> getAllFlights();
-    
+
     bool checkTicketAvailability(
         int flightId,
         const QString& ticketClass,
         int quantity = 1
-    );
-    
+        );
+
     bool bookTicket(
         int flightId,
         const QString& ticketClass,
         int quantity,
         QString& errorMsg
-    );
-    
+        );
+
     bool cancelBooking(
         int flightId,
         const QString& ticketClass,
         int quantity,
         QString& errorMsg
-    );
-    
+        );
+
     int addFlight(
         const QString& flightNo,
         int airplaneId,
@@ -98,15 +98,15 @@ public:
         const QDateTime& arriveTime,
         const QString& status,
         QString& errorMsg
-    );
+        );
     bool updateFlight(const Flight& flight, QString& errorMsg);
     bool deleteFlight(int flightId, QString& errorMsg);
     bool updateFlightStatus(int flightId, const QString& status);
-    
+
     int addAirplane(const QString& model, int seatsEconomy, int seatsBusiness, int seatsFirst);
     bool updateAirplane(const Airplane& airplane);
     bool deleteAirplane(int airplaneId);
-    
+
     int addCity(const QString& name, const QString& code, const QString& country);
     int addAirport(const QString& name, const QString& code, int cityId, int terminalCount);
 
@@ -116,11 +116,14 @@ public:
     bool deleteUser(int userId, QString& errorMsg);
     bool purchaseTicket(int userId, int ticketId, int quantity, QString& errorMsg);
     bool refundTicket(int userId, int ticketId, int quantity, QString& errorMsg);
+    User getUserById(int userId);
+    User getUserByname(const QString& username);
+    Ticket getTicketById(int ticketId);
 
 private:
     Backend();
     ~Backend();
-    
+
     CityDaoImpl* cityDao;
     AirportDaoImpl* airportDao;
     AirplaneDaoImpl* airplaneDao;
