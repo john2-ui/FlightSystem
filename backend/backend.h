@@ -97,9 +97,18 @@ public:
         const QDateTime& departTime,
         const QDateTime& arriveTime,
         const QString& status,
+        double priceEconomy,
+        double priceBusiness,
+        double priceFirst,
         QString& errorMsg
         );
-    bool updateFlight(const Flight& flight, QString& errorMsg);
+    bool updateFlight(
+        const Flight& flight,
+        double priceEconomy,
+        double priceBusiness,
+        double priceFirst,
+        QString& errorMsg
+        );
     bool deleteFlight(int flightId, QString& errorMsg);
     bool updateFlightStatus(int flightId, const QString& status);
 

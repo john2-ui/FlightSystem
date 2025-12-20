@@ -355,8 +355,11 @@ int Backend::addFlight(
     const QDateTime& departTime,
     const QDateTime& arriveTime,
     const QString& status,
+    double priceEconomy,
+    double priceBusiness,
+    double priceFirst,
     QString& errorMsg
-    ) {
+) {
     QSqlDatabase db = DBManager::instance().db();
     if (!db.transaction()) {
         errorMsg = "无法开启事务";
@@ -393,17 +396,24 @@ int Backend::addFlight(
     const struct TicketSeed {
         QString klass;
         int seats;
+        double price;
     } ticketSeeds[] = {
-        {QStringLiteral("economy"), airplane.seatsEconomy()},
-        {QStringLiteral("business"), airplane.seatsBusiness()},
-        {QStringLiteral("first"), airplane.seatsFirst()}
+        {QStringLiteral("economy"), airplane.seatsEconomy(), priceEconomy},
+        {QStringLiteral("business"), airplane.seatsBusiness(), priceBusiness},
+        {QStringLiteral("first"), airplane.seatsFirst(), priceFirst}
     };
 
     for (const TicketSeed& seed : ticketSeeds) {
         if (seed.seats <= 0) {
             continue;
         }
-        Ticket ticket(0, flightId, seed.klass, 0.0, seed.seats, seed.seats);
+        if (seed.price < 0.0) {
+            db.rollback();
+            errorMsg = QStringLiteral("%1舱位票价不能为负数").arg(seed.klass);
+            qDebug() << errorMsg;
+            return -1;
+        }
+        Ticket ticket(0, flightId, seed.klass, seed.price, seed.seats, seed.seats);
         if (ticketDao->insert(ticket) <= 0) {
             db.rollback();
             errorMsg = QStringLiteral("初始化%1舱位失败").arg(seed.klass);
@@ -423,7 +433,13 @@ int Backend::addFlight(
     return flightId;
 }
 
-bool Backend::updateFlight(const Flight& flight, QString& errorMsg) {
+bool Backend::updateFlight(
+    const Flight& flight,
+    double priceEconomy,
+    double priceBusiness,
+    double priceFirst,
+    QString& errorMsg
+) {
     QSqlDatabase db = DBManager::instance().db();
     if (!db.transaction()) {
         errorMsg = "无法开启事务";
@@ -458,10 +474,11 @@ bool Backend::updateFlight(const Flight& flight, QString& errorMsg) {
     const struct TicketSeed {
         QString klass;
         int seats;
+        double price;
     } ticketSeeds[] = {
-        {QStringLiteral("economy"), airplane.seatsEconomy()},
-        {QStringLiteral("business"), airplane.seatsBusiness()},
-        {QStringLiteral("first"), airplane.seatsFirst()}
+        {QStringLiteral("economy"), airplane.seatsEconomy(), priceEconomy},
+        {QStringLiteral("business"), airplane.seatsBusiness(), priceBusiness},
+        {QStringLiteral("first"), airplane.seatsFirst(), priceFirst}
     };
 
     QList<Ticket> allTickets = ticketDao->getAll();
@@ -507,6 +524,9 @@ bool Backend::updateFlight(const Flight& flight, QString& errorMsg) {
             const int newRemain = seed.seats - sold;
             existing.setTotalSeats(seed.seats);
             existing.setRemainSeats(newRemain);
+            if (seed.price >= 0.0) {
+                existing.setPrice(seed.price);
+            }
             if (!ticketDao->update(existing)) {
                 db.rollback();
                 errorMsg = QStringLiteral("更新%1舱位失败").arg(seed.klass);
@@ -514,7 +534,14 @@ bool Backend::updateFlight(const Flight& flight, QString& errorMsg) {
                 return false;
             }
         } else {
-            Ticket ticket(0, flight.id(), seed.klass, 0.0, seed.seats, seed.seats);
+            double priceForNewTicket = seed.price >= 0.0 ? seed.price : 0.0;
+            if (priceForNewTicket < 0.0) {
+                db.rollback();
+                errorMsg = QStringLiteral("%1舱位票价不能为负数").arg(seed.klass);
+                qDebug() << errorMsg;
+                return false;
+            }
+            Ticket ticket(0, flight.id(), seed.klass, priceForNewTicket, seed.seats, seed.seats);
             if (ticketDao->insert(ticket) <= 0) {
                 db.rollback();
                 errorMsg = QStringLiteral("初始化%1舱位失败").arg(seed.klass);
