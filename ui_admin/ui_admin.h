@@ -11,7 +11,7 @@ namespace Ui {
 class ui_admin;
 }
 QT_END_NAMESPACE
-
+class MainWindow;
 class ui_admin : public QMainWindow
 {
     Q_OBJECT
@@ -30,6 +30,7 @@ private slots:
     void DeletePlaneClicked();
     void AddAirportClicked();
     void AddCityClicked();
+    void ReturnLogin();
 
     // 添加城市
     void on_btn_addcity_clicked();
@@ -65,6 +66,7 @@ private slots:
 
 private:
     Ui::ui_admin *ui;
+    MainWindow* mainUI=nullptr;
 
     // 辅助函数
     void loadAirplaneComboBox();
