@@ -1,5 +1,6 @@
 #include "ui_admin.h"
 #include "ui_ui_admin.h"
+#include "mainwindow.h"
 #include "../backend/backend.h"
 #include <QMessageBox>
 #include <QHeaderView>
@@ -29,6 +30,7 @@ ui_admin::ui_admin(QWidget *parent)
     connect(ui->DeletePlane, &QAction::triggered, this, &ui_admin::DeletePlaneClicked);
     connect(ui->AddAirport, &QAction::triggered, this, &ui_admin::AddAirportClicked);
     connect(ui->AddCity, &QAction::triggered, this, &ui_admin::AddCityClicked);
+    connect(ui->act_returnlogin, &QAction::triggered, this, &ui_admin::ReturnLogin);
 }
 
 ui_admin::~ui_admin()
@@ -631,4 +633,10 @@ void ui_admin::on_deleteflightID_valueChanged(int arg1)
     ui->deleteflightdeparttime->setText(deleteflight.departTime.toString());
     ui->deleteflightarrivetime->setText(deleteflight.arriveTime.toString());
     ui->deleteflightstatus->setText(deleteflight.status);
+}
+
+void ui_admin::ReturnLogin(){
+    mainUI=new MainWindow();
+    mainUI->show();
+    this->close();
 }

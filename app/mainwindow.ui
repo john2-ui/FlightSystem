@@ -62,19 +62,6 @@ QLineEdit:focus {
      </rect>
     </property>
     <widget class="QWidget" name="page">
-     <widget class="QPushButton" name="pushButton">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>500</y>
-        <width>140</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>管理端</string>
-      </property>
-     </widget>
      <widget class="QWidget" name="horizontalLayoutWidget">
       <property name="geometry">
        <rect>
@@ -466,14 +453,13 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>24</height>
+     <height>18</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <tabstops>
-  <tabstop>pushButton</tabstop>
   <tabstop>btnRegister</tabstop>
  </tabstops>
  <resources/>

@@ -141,13 +141,6 @@ void MainWindow::on_btnBackToLogin_clicked()
     ui->editUsername->setFocus();
 }
 
-void MainWindow::on_pushButton_clicked()
-{
-    ui_admin* adminUI=new ui_admin();
-    adminUI->show();
-    this->close();
-}
-
 void MainWindow::on_pushButton_2_clicked()
 {
     this->close();
