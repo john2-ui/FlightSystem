@@ -64,6 +64,7 @@ City CityDaoImpl::getById(int id) {
 }
 
 QList<City> CityDaoImpl::getAll() {
+
     QList<City> list;
     QSqlQuery query(m_db);
     if (!query.exec("SELECT id, name, code, country FROM city")) {
