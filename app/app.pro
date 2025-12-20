@@ -11,4 +11,4 @@ INCLUDEPATH += \
     $$PWD/../ui_admin \
     $$PWD/../ui_client
 
-LIBS += -L$$PWD/../build/lib -lui_admin -lbackend -ldb -lmodel -lui_client -ldao_impl
+LIBS += -L$$PWD/../build/lib -lui_client -lui_admin -lbackend -ldb -lmodel  -ldao_impl
