@@ -534,14 +534,13 @@ bool Backend::updateFlight(
                 return false;
             }
         } else {
-            double priceForNewTicket = seed.price >= 0.0 ? seed.price : 0.0;
-            if (priceForNewTicket < 0.0) {
+            if (seed.price < 0.0) {
                 db.rollback();
                 errorMsg = QStringLiteral("%1舱位票价不能为负数").arg(seed.klass);
                 qDebug() << errorMsg;
                 return false;
             }
-            Ticket ticket(0, flight.id(), seed.klass, priceForNewTicket, seed.seats, seed.seats);
+            Ticket ticket(0, flight.id(), seed.klass, seed.price, seed.seats, seed.seats);
             if (ticketDao->insert(ticket) <= 0) {
                 db.rollback();
                 errorMsg = QStringLiteral("初始化%1舱位失败").arg(seed.klass);
