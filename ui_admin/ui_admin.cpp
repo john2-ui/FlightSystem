@@ -318,6 +318,9 @@ void ui_admin::on_btn_addflight_clicked()
     }
 
     QString errorMsg;
+    const double priceEconomy = 0.0;
+    const double priceBusiness = 0.0;
+    const double priceFirst = 0.0;
     int flightId = Backend::instance().addFlight(
         flightNo,
         airplaneId,
@@ -326,6 +329,9 @@ void ui_admin::on_btn_addflight_clicked()
         departtime,
         arrivetime,
         status,
+        priceEconomy,
+        priceBusiness,
+        priceFirst,
         errorMsg
     );
     if (flightId > 0) {
@@ -439,7 +445,8 @@ void ui_admin::on_btn_updateflight_clicked()
     updateflight.setStatus(updateflightstatus);
 
     QString errormsg;
-    if (Backend::instance().updateFlight(updateflight, errormsg)) {
+    constexpr double keepPrice = -1.0; // -1 表示沿用现有票价
+    if (Backend::instance().updateFlight(updateflight, keepPrice, keepPrice, keepPrice, errormsg)) {
         QMessageBox::information(this, "成功", "更新航班成功！");
         on_btn_searchupdateflight_clicked(); // 刷新表格
     } else {

@@ -296,6 +296,10 @@ void testAddFlightAPI() {
     QDateTime departTime = QDateTime::currentDateTime().addDays(1);
     QDateTime arriveTime = departTime.addSecs(2 * 3600);  // +2 小时
 
+    const double apiEconomyPrice = 420.0;
+    const double apiBusinessPrice = 1120.0;
+    const double apiFirstPrice = 2480.0;
+
     int flightId = backend.addFlight(
         flightNo,
         airplaneId,
@@ -304,6 +308,9 @@ void testAddFlightAPI() {
         departTime,
         arriveTime,
         QStringLiteral("scheduled"),
+        apiEconomyPrice,
+        apiBusinessPrice,
+        apiFirstPrice,
         errorMsg
     );
 
@@ -325,8 +332,9 @@ void testAddFlightAPI() {
     for (auto it = detail.tickets.begin(); it != detail.tickets.end(); ++it) {
         const TicketInfo& ticket = it.value();
         qDebug() << "  舱位" << ticket.ticketClass
-                 << "总座位:" << ticket.totalSeats
-                 << "余票:" << ticket.remainSeats;
+             << "票价:" << ticket.price
+             << "总座位:" << ticket.totalSeats
+             << "余票:" << ticket.remainSeats;
     }
 }
 
@@ -376,6 +384,9 @@ void testUserWorkflows() {
 
     QDateTime departTime = QDateTime::currentDateTime().addDays(2);
     QDateTime arriveTime = departTime.addSecs(2 * 3600);
+    const double userEconomyPrice = 520.0;
+    const double userBusinessPrice = 1320.0;
+    const double userFirstPrice = 2880.0;
     int flightId = backend.addFlight(
         QString("USR%1").arg(suffix.mid(0, 4)),
         airplaneId,
@@ -384,6 +395,9 @@ void testUserWorkflows() {
         departTime,
         arriveTime,
         QStringLiteral("normal"),
+        userEconomyPrice,
+        userBusinessPrice,
+        userFirstPrice,
         errorMsg
     );
 
@@ -400,6 +414,17 @@ void testUserWorkflows() {
     }
 
     FlightDetailInfo detail = backend.getFlightDetail(flightId);
+    auto logTicketSnapshot = [](const FlightDetailInfo& info, const QString& stageLabel) {
+        qDebug() << stageLabel;
+        for (auto it = info.tickets.constBegin(); it != info.tickets.constEnd(); ++it) {
+            const TicketInfo& infoTicket = it.value();
+            qDebug() << "  舱位" << infoTicket.ticketClass
+                     << "票价:" << infoTicket.price
+                     << "总座位:" << infoTicket.totalSeats
+                     << "余票:" << infoTicket.remainSeats;
+        }
+    };
+    logTicketSnapshot(detail, QStringLiteral("初始票务信息:"));
     if (detail.tickets.isEmpty()) {
         qDebug() << "航班无票可卖";
         return;
@@ -422,6 +447,7 @@ void testUserWorkflows() {
     FlightDetailInfo afterPurchase = backend.getFlightDetail(flightId);
     int remainAfterPurchase = afterPurchase.tickets[ticket.ticketClass].remainSeats;
     qDebug() << "购票后余票:" << remainAfterPurchase;
+    logTicketSnapshot(afterPurchase, QStringLiteral("购票后票务信息:"));
 
     // 3.1 继续购票尝试超出余票
     bool overBuy = backend.purchaseTicket(userId, ticket.ticketId, 100, errorMsg);
@@ -436,6 +462,7 @@ void testUserWorkflows() {
 
     FlightDetailInfo afterRefund = backend.getFlightDetail(flightId);
     qDebug() << "退票后余票:" << afterRefund.tickets[ticket.ticketClass].remainSeats;
+    logTicketSnapshot(afterRefund, QStringLiteral("退票后票务信息:"));
 
     // 4.1 退还剩余的用户购票，确保票数归零
     errorMsg.clear();
@@ -453,6 +480,7 @@ void testUserWorkflows() {
 
     FlightDetailInfo finalDetail = backend.getFlightDetail(flightId);
     qDebug() << "清理后余票:" << finalDetail.tickets[ticket.ticketClass].remainSeats;
+    logTicketSnapshot(finalDetail, QStringLiteral("清理后票务信息:"));
 
     // 5. 注销用户
     bool deleteOk = backend.deleteUser(userId, errorMsg);
