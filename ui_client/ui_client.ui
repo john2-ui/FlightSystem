@@ -134,7 +134,7 @@ QGroupBox::title {
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>5</number>
+       <number>8</number>
       </property>
       <widget class="QWidget" name="first_page">
        <widget class="QWidget" name="horizontalLayoutWidget">
@@ -1453,8 +1453,8 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>98</width>
-                <height>28</height>
+                <width>975</width>
+                <height>609</height>
                </rect>
               </property>
               <widget class="QWidget" name="verticalLayoutWidget_3">

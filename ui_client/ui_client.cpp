@@ -23,12 +23,10 @@ ui_client::ui_client(QWidget *parent)
     this->moveToCenter();
 
     ui->stackedWidget->setCurrentWidget(ui->first_page);
-    //初始化基础查询
+
     initCityQueryPage();
     initAirportQueryPage();
     initAirplaneQueryPage();
-
-    //初始化航班查询页面
     initFlightSearchPage();
     initFlightListPage();
     initFlightDetailPage();
@@ -67,10 +65,9 @@ ui_client::ui_client(QWidget *parent)
     resetBookingInfo();
 }
 
-// 初始化城市查询页面
+// 城市查询页面
 void ui_client::initCityQueryPage()
 {
-    // 1. 设置表格样式
     ui->tableCityResult->horizontalHeader()->setStretchLastSection(false);
     ui->tableCityResult->setAlternatingRowColors(true);
     ui->tableCityResult->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -79,7 +76,6 @@ void ui_client::initCityQueryPage()
 // 按ID查询
 void ui_client::on_btnQueryById_clicked()
 {
-    // 根据editCityId获取文本
     QString idText = ui->editCityId->text().trimmed().toUpper();
     if (idText.isEmpty()) {
         ui->labelCityStatus->setText("请输入城市ID");
@@ -108,7 +104,6 @@ void ui_client::on_btnQueryById_clicked()
 void ui_client::on_btnQueryByCode_clicked()
 {
     QString code = ui->editCityCode->text().trimmed();
-
     if (code.isEmpty()) {
         ui->labelCityStatus->setText("请输入城市代码");
         return;
@@ -131,16 +126,13 @@ void ui_client::on_btnQueryByCode_clicked()
 // 显示所有城市
 void ui_client::on_btnQueryAll_clicked()
 {
-    // 清空查询条件
     ui->editCityId->clear();
     ui->editCityCode->clear();
-    // 获取所有城市
     currentCityList = Backend::instance().getAllCities();
     displayCities(currentCityList);
     ui->labelCityStatus->setText("显示所有城市");
 }
 
-// 搜索过滤
 void ui_client::on_editSearchCity_textChanged(const QString &text)
 {
     if (text.isEmpty()) {
@@ -168,7 +160,6 @@ void ui_client::on_editSearchCity_textChanged(const QString &text)
 void ui_client::displayCities(const QList<City> &cities)
 {
     ui->tableCityResult->setRowCount(cities.size());
-
     for (int i = 0; i < cities.size(); ++i) {
         const City &city = cities[i];
 
@@ -177,22 +168,18 @@ void ui_client::displayCities(const QList<City> &cities)
         ui->tableCityResult->setItem(i, 2, new QTableWidgetItem(city.code()));
         ui->tableCityResult->setItem(i, 3, new QTableWidgetItem(city.country()));
     }
-
-    // 更新计数
     ui->labelCityCount->setText(QString("%1 条记录").arg(cities.size()));
 }
 
-// 初始化机场查询页面
+// 机场查询页面
 void ui_client::initAirportQueryPage()
 {
-    // 1. 设置表格样式
     ui->tableAirportResult->horizontalHeader()->setStretchLastSection(false);
     ui->tableAirportResult->setAlternatingRowColors(true);
     ui->tableAirportResult->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
 }
 
-//机场查询方法
 // 按ID查询机场
 void ui_client::on_btnQueryAirportById_clicked()
 {
@@ -248,7 +235,7 @@ void ui_client::on_btnQueryAirportByCode_clicked()
     }
 }
 
-// 按城市查询机场（新增）
+// 按城市查询机场
 void ui_client::on_btnQueryAirportByCity_clicked()
 {
     QString cityIdText = ui->editAirportCityId->text().trimmed();
@@ -264,8 +251,6 @@ void ui_client::on_btnQueryAirportByCity_clicked()
         ui->labelAirportStatus->setText("请输入有效的城市ID");
         return;
     }
-
-    // 先检查城市是否存在
     City city = Backend::instance().getCityById(cityId);
     if (city.id() <= 0) {
         ui->labelAirportStatus->setText(QString("城市ID %1 不存在").arg(cityId));
@@ -289,7 +274,6 @@ void ui_client::on_btnQueryAirportByCity_clicked()
 // 显示所有机场
 void ui_client::on_btnQueryAllAirports_clicked()
 {
-    // 清空查询条件
     ui->editAirportId->clear();
     ui->editAirportCode->clear();
     ui->editAirportCityId->clear();
@@ -325,11 +309,10 @@ void ui_client::on_editSearchAirport_textChanged(const QString &text)
     ui->labelAirportStatus->setText(QString("搜索: %1").arg(text));
 }
 
-// 显示机场到表格（5列）
+// 显示机场到表格
 void ui_client::displayAirports(const QList<Airport> &airports)
 {
     ui->tableAirportResult->setRowCount(airports.size());
-
     for (int i = 0; i < airports.size(); ++i) {
         const Airport &airport = airports[i];
 
@@ -339,46 +322,32 @@ void ui_client::displayAirports(const QList<Airport> &airports)
         ui->tableAirportResult->setItem(i, 3, new QTableWidgetItem(QString::number(airport.cityId())));
         ui->tableAirportResult->setItem(i, 4, new QTableWidgetItem(QString::number(airport.terminalCount())));
     }
-
-    // 更新计数
     ui->labelAirportCount->setText(QString("%1 条记录").arg(airports.size()));
 }
 
 void ui_client::initAirplaneQueryPage()
 {
-    // 1. 设置表格样式
     ui->tableAirplaneResult->horizontalHeader()->setStretchLastSection(false);
     ui->tableAirplaneResult->setAlternatingRowColors(true);
     ui->tableAirplaneResult->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
 }
 
-// 飞机查询方法
-
 // 按ID查询飞机
 void ui_client::on_btnQueryAirplaneById_clicked()
 {
-    // 1. 获取输入
     QString idText = ui->editAirplaneId->text().trimmed();
-
-    // 2. 检查输入是否为空
     if (idText.isEmpty()) {
         ui->labelAirplaneStatus->setText("请输入飞机ID");
         return;
     }
-
-    // 3. 转换为整数
     bool ok;
     int id = idText.toInt(&ok);
     if (!ok || id <= 0) {
         ui->labelAirplaneStatus->setText("请输入有效的数字ID");
         return;
     }
-
-    // 4. 调用后端接口查询
     Airplane airplane = Backend::instance().getAirplaneById(id);
-
-    // 5. 处理查询结果
     if (airplane.id() > 0) {
         QList<Airplane> list;
         list.append(airplane);
@@ -394,19 +363,13 @@ void ui_client::on_btnQueryAirplaneById_clicked()
 // 显示所有飞机
 void ui_client::on_btnQueryAllAirplanes_clicked()
 {
-    // 1. 清空查询条件
     ui->editAirplaneId->clear();
-    //ui->editSearchAirplane->clear();
-
-    // 2. 调用后端接口获取所有飞机
     currentAirplaneList = Backend::instance().getAllAirplanes();
-
-    // 3. 显示结果
     displayAirplanes(currentAirplaneList);
     ui->labelAirplaneStatus->setText("显示所有飞机");
 }
 
-// 飞机搜索过滤（本地搜索）
+// 飞机搜索过滤
 void ui_client::on_editSearchAirplane_textChanged(const QString &text)
 {
     if (text.isEmpty()) {
@@ -414,16 +377,10 @@ void ui_client::on_editSearchAirplane_textChanged(const QString &text)
         ui->labelAirplaneStatus->setText("显示全部");
         return;
     }
-
-    // 1. 创建过滤后的列表
     QList<Airplane> filtered;
     QString keyword = text.toLower();
-
-    // 2. 遍历当前列表，筛选匹配项
     for (int i = 0; i < currentAirplaneList.size(); ++i) {
         const Airplane &airplane = currentAirplaneList.at(i);
-
-        // 3. 检查是否匹配（支持按型号、座位数搜索）
         if (airplane.model().toLower().contains(keyword) ||
             QString::number(airplane.id()).contains(keyword) ||
             QString::number(airplane.seatsEconomy()).contains(keyword) ||
@@ -432,64 +389,45 @@ void ui_client::on_editSearchAirplane_textChanged(const QString &text)
             filtered.append(airplane);
         }
     }
-
-    // 4. 显示过滤结果
     displayAirplanes(filtered);
     ui->labelAirplaneStatus->setText(QString("搜索: %1").arg(text));
 }
 
-// 显示飞机到表格（5列）
+// 显示飞机到表格
 void ui_client::displayAirplanes(const QList<Airplane> &airplanes)
 {
-    // 1. 设置表格行数
-    ui->tableAirplaneResult->setRowCount(airplanes.size());
 
-    // 2. 遍历飞机列表，填充每一行
+    ui->tableAirplaneResult->setRowCount(airplanes.size());
     for (int i = 0; i < airplanes.size(); ++i) {
         const Airplane &airplane = airplanes[i];
-
-        // 3. 设置每一列的数据
-        // 第1列：ID
         ui->tableAirplaneResult->setItem(i, 0, new QTableWidgetItem(QString::number(airplane.id())));
-        // 第2列：飞机型号
         ui->tableAirplaneResult->setItem(i, 1, new QTableWidgetItem(airplane.model()));
-        // 第3列：经济舱座位数
         ui->tableAirplaneResult->setItem(i, 2, new QTableWidgetItem(QString::number(airplane.seatsEconomy())));
-        // 第4列：商务舱座位数
         ui->tableAirplaneResult->setItem(i, 3, new QTableWidgetItem(QString::number(airplane.seatsBusiness())));
-        // 第5列：头等舱座位数
         ui->tableAirplaneResult->setItem(i, 4, new QTableWidgetItem(QString::number(airplane.seatsFirst())));
     }
-
-    // 4. 更新记录计数
     ui->labelAirplaneCount->setText(QString("%1 条记录").arg(airplanes.size()));
 }
 
 // 初始化航班查询页面
 void ui_client::initFlightSearchPage()
 {
-    // 设置日期为明天（默认查询明天的航班）
     ui->dateEditDepart->setDate(QDate::currentDate().addDays(0));
-
-    // 加载城市数据到下拉框
     loadCitiesToComboBox();
 }
 
 // 初始化航班列表页面
 void ui_client::initFlightListPage()
 {
-    // 确保Scroll Area可以自适应
     ui->scrollAreaFlights->setWidgetResizable(true);
 }
 
 // 初始化航班详情页面
 void ui_client::initFlightDetailPage()
 {
-    // 设置表格样式
     ui->tableTickets->horizontalHeader()->setStretchLastSection(false);
     ui->tableTickets->setAlternatingRowColors(true);
     ui->tableTickets->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
 }
 
 // 加载城市到下拉框
@@ -497,15 +435,9 @@ void ui_client::loadCitiesToComboBox()
 {
     ui->comboFromCity->clear();
     ui->comboToCity->clear();
-
-    // 获取所有城市
     QList<City> cities = Backend::instance().getAllCities();
-
-    // 按城市名称排序
     std::sort(cities.begin(), cities.end(),
               [](const City& a, const City& b) { return a.name() < b.name(); });
-
-    // 添加到下拉框，格式：北京 (BJS)
     foreach (const City& city, cities) {
         QString displayText = QString("%1 (%2)").arg(city.name()).arg(city.code());
         QString cityCode = city.code();
@@ -513,16 +445,13 @@ void ui_client::loadCitiesToComboBox()
         ui->comboFromCity->addItem(displayText, cityCode);
         ui->comboToCity->addItem(displayText, cityCode);
     }
-
-    // 设置默认值（北京->上海）
     int beijingIndex = ui->comboFromCity->findText("北京 (BJS)", Qt::MatchContains);
     int shanghaiIndex = ui->comboToCity->findText("上海 (SHA)", Qt::MatchContains);
-
     if (beijingIndex != -1) ui->comboFromCity->setCurrentIndex(beijingIndex);
     if (shanghaiIndex != -1) ui->comboToCity->setCurrentIndex(shanghaiIndex);
 }
 
-// 菜单：航班查询
+// 航班查询
 void ui_client::on_actionSearchFlight_triggered()
 {
     ui->stackedWidget->setCurrentWidget(ui->page_flight_search);
@@ -531,19 +460,13 @@ void ui_client::on_actionSearchFlight_triggered()
 // 交换城市按钮
 void ui_client::on_btnSwapCities_clicked()
 {
-    // 获取当前选择
     int fromIndex = ui->comboFromCity->currentIndex();
     int toIndex = ui->comboToCity->currentIndex();
-
-    // 交换选择
     if (fromIndex >= 0 && toIndex >= 0) {
         QString fromText = ui->comboFromCity->currentText();
         QVariant fromData = ui->comboFromCity->itemData(fromIndex);
-
         QString toText = ui->comboToCity->currentText();
         QVariant toData = ui->comboToCity->itemData(toIndex);
-
-        // 交换
         ui->comboFromCity->setCurrentIndex(toIndex);
         ui->comboToCity->setCurrentIndex(fromIndex);
     }
@@ -552,62 +475,40 @@ void ui_client::on_btnSwapCities_clicked()
 // 查询按钮
 void ui_client::on_btnSearch_clicked()
 {
-    // 1. 获取查询条件
     int fromIndex = ui->comboFromCity->currentIndex();
     int toIndex = ui->comboToCity->currentIndex();
-
     if (fromIndex < 0 || toIndex < 0) {
         QMessageBox::warning(this, "提示", "请选择出发和到达城市");
         return;
     }
-
-    // 获取城市代码（从关联数据）
     currentFromCityCode = ui->comboFromCity->itemData(fromIndex).toString();
     currentToCityCode = ui->comboToCity->itemData(toIndex).toString();
     currentDepartDate = ui->dateEditDepart->date();
-
-    // 2. 验证输入
     if (currentFromCityCode.isEmpty() || currentToCityCode.isEmpty()) {
         QMessageBox::warning(this, "提示", "城市选择无效");
         return;
     }
-
     if (currentFromCityCode == currentToCityCode) {
         QMessageBox::warning(this, "提示", "出发和到达城市不能相同");
         return;
     }
-
-    if (currentDepartDate < QDate::currentDate()) {
-        QMessageBox::warning(this, "提示", "出发日期不能是过去");
-        return;
-    }
-
-    // 3. 调用后端接口查询航班
     currentFlightList = Backend::instance().searchFlights(
         currentFromCityCode,
         currentToCityCode,
         currentDepartDate
         );
-
-    // 4. 显示结果到列表页面
     showFlightListPage();
 }
 
 // 显示航班列表页面
 void ui_client::showFlightListPage()
 {
-    // 更新页面标题和查询信息
     QString fromCityName = ui->comboFromCity->currentText();
     QString toCityName = ui->comboToCity->currentText();
-
     ui->labelRouteInfo->setText(QString("%1 → %2").arg(fromCityName).arg(toCityName));
     ui->labelDateInfo->setText(currentDepartDate.toString("yyyy-MM-dd"));
     ui->labelCountInfo->setText(QString("共找到 %1 个航班").arg(currentFlightList.size()));
-
-    // 显示航班卡片
     displayFlightCards();
-
-    // 切换到列表页面
     ui->stackedWidget->setCurrentWidget(ui->page_flight_list);
 }
 
@@ -620,39 +521,27 @@ void ui_client::on_btnBackFromList_clicked()
 // 显示航班卡片
 void ui_client::displayFlightCards()
 {
-    // 清空现有的卡片
     clearFlightCards();
-
     QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(ui->scrollAreaWidgetContents->layout());
     if (!layout) {
         layout = new QVBoxLayout(ui->scrollAreaWidgetContents);
         layout->setObjectName("layoutCards");
     }
-
-    int normalFlightCount = 0; // 统计正常航班数量
-
-    // 为每个航班创建卡片，只显示status为normal的航班
+    int normalFlightCount = 0;
     for (const FlightDetailInfo& flight : currentFlightList) {
-        // 检查航班状态，只显示normal状态的航班
         if (flight.status == "normal") {
             QGroupBox* card = createFlightCard(flight);
             layout->addWidget(card);
             normalFlightCount++;
         }
     }
-
-    // 更新航班数量显示
     ui->labelCountInfo->setText(QString("共找到 %1 个航班").arg(normalFlightCount));
-
-    // 如果没有正常航班，显示提示信息
     if (normalFlightCount == 0) {
         QLabel* lblNoFlight = new QLabel("没有找到可用的航班");
         lblNoFlight->setAlignment(Qt::AlignCenter);
         lblNoFlight->setStyleSheet("color: #999; font-size: 16px; padding: 40px;");
         layout->addWidget(lblNoFlight);
     }
-
-    // 添加一个拉伸，让卡片靠上显示
     layout->addStretch();
 }
 
@@ -675,19 +564,12 @@ QGroupBox* ui_client::createFlightCard(const FlightDetailInfo& flight)
         "  background-color: #f8f9fa;"
         "}"
         );
-
     QVBoxLayout* mainLayout = new QVBoxLayout(card);
-
-    // 第一行：航班号和时间
     QHBoxLayout* row1 = new QHBoxLayout();
-    //row1->setSpacing(15);
-    //row1->setContentsMargins(0,0,0,8);
 
-    // 航班号（蓝色粗体）
     QLabel* lblFlightNo = new QLabel(QString("✈️ <b style='color:#0066CC; font-size:16px;'>%1</b>").arg(flight.flightNo));
     row1->addWidget(lblFlightNo);
 
-    // 时间信息
     QString timeInfo = QString("%1 — %2  (%3)")
                            .arg(flight.departTime.toString("hh:mm"))
                            .arg(flight.arriveTime.toString("hh:mm"))
@@ -700,7 +582,6 @@ QGroupBox* ui_client::createFlightCard(const FlightDetailInfo& flight)
 
     mainLayout->addLayout(row1);
 
-    // 第二行：机场路线
     QHBoxLayout* row2 = new QHBoxLayout();
 
     QString airportInfo = QString("%1 → %2")
@@ -711,13 +592,10 @@ QGroupBox* ui_client::createFlightCard(const FlightDetailInfo& flight)
     lblAirports->setStyleSheet("font-size: 14px;");
     row2->addWidget(lblAirports);
     row2->addStretch();
-
     mainLayout->addLayout(row2);
 
-    // 第三行：票价和选择按钮
     QHBoxLayout* row3 = new QHBoxLayout();
 
-    // 显示最低票价
     double minPrice = 999999;
     QString minPriceClass;
     for (auto it = flight.tickets.begin(); it != flight.tickets.end(); ++it) {
@@ -737,16 +615,23 @@ QGroupBox* ui_client::createFlightCard(const FlightDetailInfo& flight)
 
     row3->addStretch();
 
-    // 选择按钮
     QPushButton* btnSelect = new QPushButton("选择");
     btnSelect->setProperty("flightId", flight.flightId);
     btnSelect->setStyleSheet(
+        "QPushButton {"
         "background-color: #FF6600;"
         "color: white;"
         "padding: 8px 20px;"
         "border: none;"
         "border-radius: 4px;"
         "font-size: 16px;"
+        "}"
+        "QPushButton:hover {"
+        "background-color:#EE5500;"
+        "}"
+        "QPushButton:press {"
+        "background-color:#BB5500;"
+        "}"
         );
 
     connect(btnSelect, &QPushButton::clicked, [this, flight]() {
@@ -755,7 +640,6 @@ QGroupBox* ui_client::createFlightCard(const FlightDetailInfo& flight)
 
     row3->addWidget(btnSelect);
     mainLayout->addLayout(row3);
-
     return card;
 }
 
@@ -764,8 +648,6 @@ void ui_client::clearFlightCards()
 {
     QLayout* layout = ui->scrollAreaWidgetContents->layout();
     if (!layout) return;
-
-    // 删除所有子部件
     QLayoutItem* item;
     while ((item = layout->takeAt(0)) != nullptr) {
         if (item->widget()) {
@@ -793,57 +675,34 @@ void ui_client::on_btnBook_clicked()
 // 显示航班详情
 void ui_client::displayFlightDetail(int flightId)
 {
-    // 保存选中的航班ID
     selectedFlightId = flightId;
-
     resetBookingInfo();
-
-    // 调用后端接口获取航班详情
     FlightDetailInfo flight = Backend::instance().getFlightDetail(flightId);
-
     if (flight.flightId == 0) {
         QMessageBox::warning(this, "错误", "航班不存在或已取消");
         return;
     }
-
-    // 更新基本信息
     ui->labelFlightNo->setText(flight.flightNo);
     ui->labelStatus->setText(flight.status);
-
-    // 设置状态颜色
     QString statusColor = "#4CAF50"; // 绿色
     if (flight.status.contains("延误")) statusColor = "#FF9800"; // 橙色
     if (flight.status.contains("取消")) statusColor = "#F44336"; // 红色
     ui->labelStatus->setStyleSheet(QString("color: %1; font-weight: bold;").arg(statusColor));
-
-    // 出发信息
     ui->labelDepartAirport->setText(
         QString("%1 (%2)").arg(flight.departAirportName).arg(flight.departAirportCode));
     ui->labelDepartTime->setText(flight.departTime.toString("yyyy-MM-dd hh:mm"));
-
-    // 到达信息
     ui->labelArriveAirport->setText(
         QString("%1 (%2)").arg(flight.arriveAirportName).arg(flight.arriveAirportCode));
     ui->labelArriveTime->setText(flight.arriveTime.toString("yyyy-MM-dd hh:mm"));
-
-    // 飞行信息
     ui->labelDuration->setText(formatDuration(flight.departTime, flight.arriveTime));
     QString model=flight.airplaneModel.isEmpty()?
                    "未知型号":
                    QString("🛩 %1").arg(flight.airplaneModel);
     ui->labelAirplaneModel->setText(model);
-
-    // 填充机票表格
     fillTicketTable(flight.tickets);
-
-    // 更新舱位选择UI
     updateSeatSelectionUI();
-
-    // 默认选中经济舱
     ui->radioEconomy->setChecked(true);
     on_radioEconomy_clicked();
-
-    // 切换到详情页面
     ui->stackedWidget->setCurrentWidget(ui->page_flight_detail);
 }
 
@@ -855,22 +714,14 @@ void ui_client::fillTicketTable(const QMap<QString, TicketInfo>& tickets)
     int row = 0;
     for (auto it = tickets.begin(); it != tickets.end(); ++it) {
         const TicketInfo& ticket = it.value();
-
-        // 舱位等级
         QTableWidgetItem* itemClass = new QTableWidgetItem(ticket.ticketClass);
         itemClass->setTextAlignment(Qt::AlignCenter);
         ui->tableTickets->setItem(row, 0, itemClass);
-
-        // 总座位数
         QTableWidgetItem* itemTotal = new QTableWidgetItem(QString::number(ticket.totalSeats));
         itemTotal->setTextAlignment(Qt::AlignCenter);
         ui->tableTickets->setItem(row, 1, itemTotal);
-
-        // 剩余座位数
         QTableWidgetItem* itemRemain = new QTableWidgetItem(QString::number(ticket.remainSeats));
         itemRemain->setTextAlignment(Qt::AlignCenter);
-
-        // 根据余票数量设置颜色
         if (ticket.remainSeats == 0) {
             itemRemain->setForeground(Qt::red);
             itemRemain->setText("已售罄");
@@ -881,8 +732,6 @@ void ui_client::fillTicketTable(const QMap<QString, TicketInfo>& tickets)
         }
 
         ui->tableTickets->setItem(row, 2, itemRemain);
-
-        // 价格
         QTableWidgetItem* itemPrice = new QTableWidgetItem(QString("¥%1").arg(ticket.price));
         itemPrice->setTextAlignment(Qt::AlignCenter);
         ui->tableTickets->setItem(row, 3, itemPrice);
@@ -891,7 +740,7 @@ void ui_client::fillTicketTable(const QMap<QString, TicketInfo>& tickets)
     }
 }
 
-// 格式化飞行时长
+// 飞行时长计算
 QString ui_client::formatDuration(const QDateTime& start, const QDateTime& end)
 {
     qint64 seconds = start.secsTo(end);
@@ -907,8 +756,7 @@ QString ui_client::formatDuration(const QDateTime& start, const QDateTime& end)
     }
 }
 
-// ==================== 用户中心相关方法 ====================
-
+//用户中心相关方法
 // 设置用户ID
 void ui_client::setCurrentUserId(int userId)
 {
@@ -916,7 +764,6 @@ void ui_client::setCurrentUserId(int userId)
     if(userId>0){
         loadUserInfo();
     }
-
 }
 
 // 设置用户名
@@ -930,10 +777,7 @@ void ui_client::setCurrentUsername(const QString &username)
 void ui_client::loadUserInfo()
 {
     if (currentUserId <= 0) return;
-
-    // 从数据库获取用户信息
     User user = Backend::instance().getUserById(currentUserId);
-
     if (user.id() > 0) {
         currentUsername = user.username();
         updateUserInfoDisplay();
@@ -945,7 +789,6 @@ void ui_client::updateUserInfoDisplay()
 {
     if (currentUserId > 0) {
         ui->labelUserName->setText(currentUsername);
-        // 从数据库获取完整用户信息以显示类型
         User user = Backend::instance().getUserById(currentUserId);
         ui->labelUserPassword->setText(user.password());
     } else {
@@ -953,27 +796,22 @@ void ui_client::updateUserInfoDisplay()
     }
 }
 
-// 菜单：个人中心
+//个人中心
 void ui_client::on_actionUserCenter_triggered()
 {
     if (currentUserId <= 0) {
         QMessageBox::warning(this, "提示", "请先登录");
         return;
     }
-
     ui->stackedWidget->setCurrentWidget(ui->page_user_center);
     loadUserInfo();
 }
 
 void ui_client::updateSeatSelectionUI()
 {
-    // 获取机票信息
     FlightDetailInfo flight = Backend::instance().getFlightDetail(selectedFlightId);
     if (flight.flightId == 0) return;
-
     const QMap<QString, TicketInfo>& tickets = flight.tickets;
-
-    // 设置单选按钮是否可用（根据余票）
     if (tickets.contains("economy")) {
         ui->radioEconomy->setEnabled(tickets["economy"].remainSeats > 0);
         ui->radioEconomy->setToolTip(tickets["economy"].remainSeats > 0
@@ -994,7 +832,6 @@ void ui_client::updateSeatSelectionUI()
                                        ? QString("余票: %1张").arg(tickets["first"].remainSeats)
                                        : "已售罄");
     }
-    // 如果没有可用舱位，禁用订票按钮
     bool hasAvailable = false;
     for (const TicketInfo& ticket : tickets.values()) {
         if (ticket.remainSeats > 0) {
@@ -1052,19 +889,14 @@ void ui_client::on_radioFirst_clicked()
 void ui_client::on_btnConfirmBook_clicked()
 {
     qDebug()<<"当前值:"<<currentUserId<<"票ID"<<currentTicketId;
-    // 验证用户是否登录
     if (currentUserId <= 0) {
         QMessageBox::warning(this, "请先登录", "您需要先登录才能订票");
         return;
     }
-
-    // 验证订票信息
     if (selectedFlightId <= 0 || currentTicketId <= 0 || currentTicketClass.isEmpty()) {
         QMessageBox::warning(this, "错误", "请选择舱位");
         return;
     }
-
-    // 获取最新余票信息
     FlightDetailInfo flight = Backend::instance().getFlightDetail(selectedFlightId);
     if (!flight.tickets.contains(currentTicketClass)) {
         QMessageBox::warning(this, "错误", "该舱位不存在");
@@ -1077,25 +909,6 @@ void ui_client::on_btnConfirmBook_clicked()
         updateSeatSelectionUI();
         return;
     }
-
-    // 确认对话框
-    /*QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "确认订票",
-                                  QString("您确定要预订：\n"
-                                          "航班：%1\n"
-                                          "舱位：%2\n"
-                                          "价格：¥%3\n\n"
-                                          "确认支付吗？")
-                                      .arg(ui->labelFlightNo->text())
-                                      .arg(currentTicketClass)
-                                      .arg(currentTicketPrice),
-                                  QMessageBox::Yes | QMessageBox::No);
-
-    if (reply != QMessageBox::Yes) {
-        return;
-    }*/
-
-    // 确认对话框（修改按钮文本）
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("确认订票");
     msgBox.setText(QString("您确定要预订：\n"
@@ -1107,12 +920,8 @@ void ui_client::on_btnConfirmBook_clicked()
                        .arg(currentTicketClass)
                        .arg(currentTicketPrice));
     msgBox.setIcon(QMessageBox::Question);
-
-    // 设置标准按钮
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::Yes);
-
-    // 修改按钮文本为中文
     msgBox.button(QMessageBox::Yes)->setText("确认");
     msgBox.button(QMessageBox::No)->setText("取消");
 
@@ -1121,9 +930,6 @@ void ui_client::on_btnConfirmBook_clicked()
     if (reply != QMessageBox::Yes) {
         return;
     }
-
-
-    // 调用后端购票接口
     QString errorMsg;
     bool success = Backend::instance().purchaseTicket(currentUserId,
                                                       currentTicketId,
@@ -1141,10 +947,8 @@ void ui_client::on_btnConfirmBook_clicked()
                                      .arg(currentTicketClass)
                                      .arg(currentTicketPrice));
 
-        // 刷新显示
         displayFlightDetail(selectedFlightId);
 
-        // 更新用户中心信息
         loadUserInfo();
 
     } else {
@@ -1188,16 +992,10 @@ void ui_client::loadUserTickets()
         QMessageBox::warning(this, "提示", "请先登录");
         return;
     }
-
-    // 清空现有卡片
     clearTicketCards();
-
-    // 更新状态
     ui->labelTicketStatus->setText("正在查询数据库...");
     ui->labelTicketStatus->setStyleSheet("color: #2196F3;");
     QApplication::processEvents();  // 更新UI显示
-
-    // 获取用户信息
     User user = Backend::instance().getUserById(currentUserId);
     if (user.id() <= 0) {
         showNoTicketMessage("获取用户信息失败");
@@ -1206,12 +1004,10 @@ void ui_client::loadUserTickets()
         return;
     }
 
-    // 获取用户的所有票ID
     QVector<int> ticketIds = user.ticketsID();
 
     if (ticketIds.isEmpty()) {
         showNoTicketMessage("暂无机票记录，快去预订吧！");
-        // 清空统计信息
         ui->labelTotalTickets->setText("总票数：0");
         ui->labelTotalAmount->setText("总金额：¥0");
         ui->labelStatusSummary->setText("状态：无");
@@ -1222,19 +1018,14 @@ void ui_client::loadUserTickets()
 
     qDebug() << "用户" << currentUserId << "有" << ticketIds.size() << "张票";
 
-    // 存储所有票和航班信息的临时列表，用于排序
     QList<QPair<Ticket, FlightDetailInfo>> ticketFlights;
 
-    // 获取所有票和航班信息
     for (int ticketId : ticketIds) {
-        // 获取票信息
         Ticket ticket = Backend::instance().getTicketById(ticketId);
         if (ticket.id() <= 0) {
             qDebug() << "获取票信息失败，票ID:" << ticketId;
             continue;
         }
-
-        // 获取航班详情
         FlightDetailInfo flight = Backend::instance().getFlightDetail(ticket.flightId());
         if (flight.flightId <= 0) {
             qDebug() << "获取航班详情失败，航班ID:" << ticket.flightId();
@@ -1246,7 +1037,6 @@ void ui_client::loadUserTickets()
 
     if (ticketFlights.isEmpty()) {
         showNoTicketMessage("未找到有效机票");
-        // 清空统计信息
         ui->labelTotalTickets->setText("总票数：0");
         ui->labelTotalAmount->setText("总金额：¥0");
         ui->labelStatusSummary->setText("状态：无");
@@ -1256,39 +1046,29 @@ void ui_client::loadUserTickets()
     }
 
     qDebug() << "成功获取" << ticketFlights.size() << "张有效机票";
-
-    // 按起飞时间排序（最近的在前）
     std::sort(ticketFlights.begin(), ticketFlights.end(),
               [](const QPair<Ticket, FlightDetailInfo>& a,
                  const QPair<Ticket, FlightDetailInfo>& b) {
                   return a.second.departTime < b.second.departTime;
               });
-
-    // 创建或获取布局
     QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(ui->scrollAreaWidgetContents_2->layout());
     if (!layout) {
         layout = new QVBoxLayout(ui->scrollAreaWidgetContents_2);
         layout->setSpacing(8);
     }
-
-    // 统计变量
     int totalTickets = ticketFlights.size();
     double totalAmount = 0.0;
     int normalCount = 0;
     int delayedCount = 0;
     int cancelledCount = 0;
-
-    // 创建并添加卡片
     for (const auto& pair : ticketFlights) {
         const Ticket& ticket = pair.first;
         const FlightDetailInfo& flight = pair.second;
 
-        // 创建卡片
         QGroupBox* card = createTicketCard(ticket, flight);
         if (card) {
             layout->addWidget(card);
 
-            // 统计
             totalAmount += ticket.price();
 
             QString status = flight.status.toLower();
@@ -1302,14 +1082,11 @@ void ui_client::loadUserTickets()
         }
     }
 
-    // 添加拉伸，让卡片靠上显示
     layout->addStretch();
 
-    // 更新统计信息
     ui->labelTotalTickets->setText(QString("总票数：%1").arg(totalTickets));
     ui->labelTotalAmount->setText(QString("总金额：¥%1").arg(totalAmount, 0, 'f', 2));
 
-    // 状态统计
     QString statusText;
     if (totalTickets == 0) {
         statusText = "状态：无";
@@ -1323,16 +1100,13 @@ void ui_client::loadUserTickets()
     }
     ui->labelStatusSummary->setText(statusText);
 
-    // 更新状态栏
     ui->labelTicketStatus->setText(QString("已加载 %1 张机票").arg(totalTickets));
     ui->labelTicketStatus->setStyleSheet("color: #4CAF50;");
 
-    // 3秒后清空状态
     QTimer::singleShot(3000, [this]() {
         ui->labelTicketStatus->clear();
     });
 
-    // 调试信息
     qDebug() << "统计信息："
              << "总票数：" << totalTickets
              << "总金额：" << totalAmount
@@ -1341,19 +1115,14 @@ void ui_client::loadUserTickets()
              << "取消：" << cancelledCount;
 }
 
-// 修改函数签名，直接接收 Ticket 和 FlightDetailInfo
+//创建机票卡片
 QGroupBox* ui_client::createTicketCard(const Ticket& ticket, const FlightDetailInfo& flight)
 {
-    // 创建卡片容器
     QGroupBox* card = new QGroupBox();
     card->setProperty("ticketId", ticket.id());
     card->setMinimumHeight(250);
-
-    // 状态颜色
     QString statusColor = getStatusColor(flight.status);
     QString statusText = translateStatus(flight.status);
-
-    // 卡片样式（和之前一样）
     card->setStyleSheet(
         QString(
             "QGroupBox {"
@@ -1372,16 +1141,10 @@ QGroupBox* ui_client::createTicketCard(const Ticket& ticket, const FlightDetailI
 
     QVBoxLayout* mainLayout = new QVBoxLayout(card);
     mainLayout->setSpacing(6);
-
-    // === 第一行：航班号和状态 ===
     QHBoxLayout* row1 = new QHBoxLayout();
-
-    // 航班号
     QLabel* lblFlightNo = new QLabel(QString("✈️ %1").arg(flight.flightNo));
     lblFlightNo->setStyleSheet("font-weight: bold; color: #1565C0; font-size: 15px;");
     row1->addWidget(lblFlightNo);
-
-    // 状态
     QLabel* lblStatus = new QLabel(statusText);
     lblStatus->setStyleSheet(
         QString(
@@ -1398,9 +1161,6 @@ QGroupBox* ui_client::createTicketCard(const Ticket& ticket, const FlightDetailI
 
     row1->addStretch();
     mainLayout->addLayout(row1);
-
-    // === 第二行：机场信息 ===
-    // 使用 flight 中的机场信息
     QString airportText = QString("%1 → %2")
                               .arg(flight.departAirportName)
                               .arg(flight.arriveAirportName);
@@ -1408,11 +1168,8 @@ QGroupBox* ui_client::createTicketCard(const Ticket& ticket, const FlightDetailI
     QLabel* lblAirport = new QLabel(airportText);
     lblAirport->setStyleSheet("font-weight: bold; color: #0D47A1; font-size: 13px;");
     mainLayout->addWidget(lblAirport);
-
-    // === 第三行：时间、日期、机型 ===
     QHBoxLayout* row3 = new QHBoxLayout();
 
-    // 时间
     QString timeText = QString("%1 %2 —— %3 %4")
                            .arg(flight.departTime.toString("yyyy-MM-dd"))
                            .arg(flight.departTime.toString("hh:mm"))
@@ -1421,13 +1178,10 @@ QGroupBox* ui_client::createTicketCard(const Ticket& ticket, const FlightDetailI
     QLabel* lblTime = new QLabel(timeText);
     lblTime->setStyleSheet("color: #37474F; font-size: 12px;");
     row3->addWidget(lblTime);
-
-    // 分隔符
     QLabel* dot1 = new QLabel("·");
     dot1->setStyleSheet("color: #BDBDBD; margin: 0 8px;");
     row3->addWidget(dot1);
 
-    // 飞机机型（从 flight 获取）
     if (!flight.airplaneModel.isEmpty()) {
         QLabel* lblModel = new QLabel(QString("🛩 %1").arg(flight.airplaneModel));
         lblModel->setStyleSheet("color: #546E7A; font-size: 11px;");
@@ -1437,10 +1191,7 @@ QGroupBox* ui_client::createTicketCard(const Ticket& ticket, const FlightDetailI
     row3->addStretch();
     mainLayout->addLayout(row3);
 
-    // === 第四行：舱位和价格 ===
     QHBoxLayout* row4 = new QHBoxLayout();
-
-    // 舱位（从 ticket 获取）
     QString classText = ticket.tClass();
     if (classText == "economy") classText = "经济舱";
     else if (classText == "business") classText = "商务舱";
@@ -1452,14 +1203,12 @@ QGroupBox* ui_client::createTicketCard(const Ticket& ticket, const FlightDetailI
 
     row4->addStretch();
 
-    // 价格（从 ticket 获取）
     QLabel* lblPrice = new QLabel(QString("¥%1").arg(ticket.price(), 0, 'f', 0));
     lblPrice->setStyleSheet("color: #FF6F00; font-size: 14px; font-weight: bold;");
     row4->addWidget(lblPrice);
 
     mainLayout->addLayout(row4);
 
-    // === 第五行：退票按钮 ===
     QHBoxLayout* row5 = new QHBoxLayout();
     row5->addStretch();
 
@@ -1470,6 +1219,7 @@ QGroupBox* ui_client::createTicketCard(const Ticket& ticket, const FlightDetailI
         btnRefund->setText("退票");
         btnRefund->setEnabled(true);
         btnRefund->setStyleSheet(
+            "QPushButton {"
             "background-color: #FF5252;"
             "color: white;"
             "padding: 5px 20px;"
@@ -1477,6 +1227,10 @@ QGroupBox* ui_client::createTicketCard(const Ticket& ticket, const FlightDetailI
             "border-radius: 4px;"
             "font-size: 12px;"
             "font-weight: bold;"
+            "}"
+            "QPushButton:hover {"
+            "background-color: #E04242;"
+            "}"
             );
 
         connect(btnRefund, &QPushButton::clicked, [this, ticket]() {
@@ -1527,7 +1281,6 @@ QString ui_client::getStatusColor(const QString& status)
 bool ui_client::canRefundTicket(const QString& status)
 {
     QString lowerStatus = status.toLower();
-    // normal和delayed状态可以退票，cancelled状态不可退
     return (lowerStatus == "normal" || lowerStatus == "delayed");
 }
 
@@ -1574,56 +1327,43 @@ void ui_client::on_btnRefreshTickets_clicked()
     loadUserTickets();
     ui->labelTicketStatus->setText("已刷新");
     ui->labelTicketStatus->setStyleSheet("color: green;");
-
-    // 2秒后清空状态
     QTimer::singleShot(2000, [this]() {
         ui->labelTicketStatus->clear();
     });
 }
-
+//退票按钮
 void ui_client::onRefundButtonClicked(int ticketId)
 {
-    // 1. 获取票信息（只需要价格）
     Ticket ticket = Backend::instance().getTicketById(ticketId);
     if (ticket.id() <= 0) {
         QMessageBox::warning(this, "错误", "未找到票信息");
         return;
     }
-
-    // 2. 获取航班信息（只需要状态）
     FlightDetailInfo flight = Backend::instance().getFlightDetail(ticket.flightId());
     if (flight.flightId <= 0) {
         QMessageBox::warning(this, "错误", "未找到航班信息");
         return;
     }
-
-    // 3. 检查是否可退票
     if (!canRefundTicket(flight.status)) {
         QString statusText = translateStatus(flight.status);
         QMessageBox::warning(this, "无法退票",
                              QString("当前航班状态为【%1】，不可退票").arg(statusText));
         return;
     }
-    // 4. 修改确认对话框
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("退票确认");
     msgBox.setText(QString("确定要退票吗？\n"
                            "金额：¥%1")
                        .arg(ticket.price(), 0, 'f', 2));
     msgBox.setIcon(QMessageBox::Question);
-
-    // 设置标准按钮
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::No);  // 默认选择"否"，防止误操作
-
-    // 修改按钮文本为中文
     msgBox.button(QMessageBox::Yes)->setText("确认退票");
     msgBox.button(QMessageBox::No)->setText("我再想想");
 
     int reply = msgBox.exec();
 
     if (reply == QMessageBox::Yes) {
-        // 5. 调用后端退票接口
         QString errorMsg;
         bool success = Backend::instance().refundTicket(
             currentUserId, ticketId, 1, errorMsg);
@@ -1641,7 +1381,7 @@ ui_client::~ui_client()
 {
     delete ui;
 }
-
+//中心显示
 void ui_client::moveToCenter()
 {
     QScreen *screen = QGuiApplication::primaryScreen();
@@ -1657,7 +1397,7 @@ void ui_client::moveToCenter()
 
     this->move(x, y);
 }
-
+//注销账号
 void ui_client::on_btnDeleteAccount_clicked()
 {
     QMessageBox msgBox(this);
@@ -1665,12 +1405,8 @@ void ui_client::on_btnDeleteAccount_clicked()
     msgBox.setIcon(QMessageBox::Warning);
     msgBox.setText("⚠️ 您确定要注销账号吗？");
     msgBox.setInformativeText("此操作不可撤销！所有数据将被永久删除。");
-
-    // 自定义按钮
     QPushButton* deleteButton = msgBox.addButton("确认注销", QMessageBox::AcceptRole);
     QPushButton* cancelButton = msgBox.addButton("取消", QMessageBox::RejectRole);
-
-    // 设置按钮样式
     deleteButton->setStyleSheet(
         "background-color: #F44336;"
         "color: white;"
@@ -1688,7 +1424,6 @@ void ui_client::on_btnDeleteAccount_clicked()
     msgBox.exec();
 
     if (msgBox.clickedButton() == deleteButton) {
-        // 执行注销
         QString errorMsg;
         bool success = Backend::instance().deleteUser(currentUserId, errorMsg);
 
@@ -1708,15 +1443,13 @@ void ui_client::on_pushButtonexit_clicked()
     this->close();
 }
 
-
+//退出登录
 void ui_client::on_btnExit_clicked()
 {
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("确认退出登录");
     msgBox.setIcon(QMessageBox::Warning);
     msgBox.setText("⚠️ 您确定要退出登录吗？");
-
-    // 自定义按钮
     QPushButton* confirmButton1 = msgBox.addButton("确认退出", QMessageBox::AcceptRole);
     QPushButton* cancelButton1 = msgBox.addButton("取消", QMessageBox::RejectRole);
 
