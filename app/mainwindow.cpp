@@ -112,7 +112,7 @@ void MainWindow::on_btnRegister_clicked()
         return;
     }
 
-    // 调用Backend的注册方法（只能是普通用户）
+    // 调用Backend的注册方法
     QString errorMsg;
     bool success = Backend::instance().registerUser(username, password, false, errorMsg);
 
@@ -120,7 +120,6 @@ void MainWindow::on_btnRegister_clicked()
         ui->labelRegStatus->setText("注册成功！请登录");
         ui->labelRegStatus->setStyleSheet("color: green;");
 
-        // 延迟1.5秒后返回登录页面
         QTimer::singleShot(500, [this, username]() {
             ui->stackedWidget->setCurrentIndex(0);
             ui->editUsername->setText(username);
