@@ -8,6 +8,9 @@
 #include <QList>
 #include "../backend/backend.h"
 
+#include <QTableView>
+#include <QStandardItemModel>
+
 namespace Ui {
 class ui_client;
 }
@@ -56,6 +59,8 @@ private slots:
     void onRefundButtonClicked(int ticketId);
     void on_btnExit_clicked();
     void on_btnDeleteAccount_clicked();
+
+    void on_btnallflight_clicked();
 
 private:
     Ui::ui_client *ui;
@@ -108,6 +113,11 @@ private:
     void showNoTicketMessage(const QString& message);
     void moveToCenter();
     void showDeleteAccountDialog();
+
+    QStandardItemModel *flightModel; // 新增：数据模型
+    void loadAllFlightsToTable();
+    void displayFlightsToTable(const QList<FlightDetailInfo>& flightList);
+    void initFlightTableView();
 };
 
 #endif // UI_CLIENT_H

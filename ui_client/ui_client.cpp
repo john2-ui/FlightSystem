@@ -17,10 +17,13 @@ ui_client::ui_client(QWidget *parent)
     , currentUserId(-1)
     , selectedFlightId(-1)
     , currentTicketId(-1)
+    ,flightModel(new QStandardItemModel(this))
 {
     qDebug()<<"初始值:"<<currentUserId;
     ui->setupUi(this);
     this->moveToCenter();
+
+    initFlightTableView();
 
     ui->stackedWidget->setCurrentWidget(ui->first_page);
 
@@ -1475,5 +1478,73 @@ void ui_client::on_btnExit_clicked()
         mainUI->show();
         this->close();
     }
+}
+
+
+void ui_client::initFlightTableView()
+{
+    // 设置列数和列头（与原有功能一致，共7列）
+    QStringList headers = {"航班号", "机型", "出发机场", "到达机场", "出发时间", "到达时间", "状态"};
+    flightModel->setColumnCount(7);
+    flightModel->setHorizontalHeaderLabels(headers);
+    // 将模型绑定到QTableView
+    ui->tableflightsearch->setModel(flightModel);
+    // 实现列等宽（与原有逻辑一致）
+    ui->tableflightsearch->horizontalHeader()->setStretchLastSection(false);
+    ui->tableflightsearch->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch); // 等宽关键
+    ui->tableflightsearch->setAlternatingRowColors(true);
+}
+
+// 修改：将航班数据填充到QTableView（原QTableWidget逻辑迁移）
+void ui_client::displayFlightsToTable(const QList<FlightDetailInfo>& flightList)
+{
+    // 清空模型数据（替代原setRowCount(0)）
+    flightModel->setRowCount(0);
+
+    // 按出发时间排序（原有逻辑不变）
+    QList<FlightDetailInfo> sortedFlights = flightList;
+    std::sort(sortedFlights.begin(), sortedFlights.end(),
+              [](const FlightDetailInfo& a, const FlightDetailInfo& b) {
+                  return a.departTime < b.departTime;
+              });
+
+    // 遍历航班数据填充模型
+    for (const auto& flight : sortedFlights) {
+        QList<QStandardItem*> rowItems;
+
+        // 1. 航班号
+        rowItems.append(new QStandardItem(flight.flightNo));
+        // 2. 飞机机型
+        QString planeModel = flight.airplaneModel.isEmpty() ? "未知机型" : flight.airplaneModel;
+        rowItems.append(new QStandardItem(planeModel));
+        // 3. 出发机场
+        rowItems.append(new QStandardItem(flight.departAirportName));
+        // 4. 到达机场
+        rowItems.append(new QStandardItem(flight.arriveAirportName));
+        // 5. 出发时间
+        rowItems.append(new QStandardItem(flight.departTime.toString("yyyy-MM-dd hh:mm")));
+        // 6. 到达时间
+        rowItems.append(new QStandardItem(flight.arriveTime.toString("yyyy-MM-dd hh:mm")));
+        // 7. 状态（设置文字颜色）
+        QString statusText = translateStatus(flight.status);
+        QStandardItem* statusItem = new QStandardItem(statusText);
+        QString statusColor = getStatusColor(flight.status);
+        statusItem->setForeground(QColor(statusColor));
+        rowItems.append(statusItem);
+
+        // 将行数据添加到模型
+        flightModel->appendRow(rowItems);
+    }
+}
+
+void ui_client::loadAllFlightsToTable()
+{
+    currentFlightList = Backend::instance().getAllFlights();
+    displayFlightsToTable(currentFlightList);
+}
+
+void ui_client::on_btnallflight_clicked()
+{
+    loadAllFlightsToTable();
 }
 

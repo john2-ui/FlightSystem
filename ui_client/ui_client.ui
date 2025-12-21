@@ -1804,23 +1804,10 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
           <x>0</x>
           <y>0</y>
           <width>971</width>
-          <height>761</height>
+          <height>771</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <spacer name="verticalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Orientation::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
          <item>
           <widget class="QLabel" name="labelFlightSearchTitle">
            <property name="styleSheet">
@@ -2011,6 +1998,42 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
              </layout>
             </item>
            </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_3">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>500</height>
+            </size>
+           </property>
+           <property name="title">
+            <string>所有航班</string>
+           </property>
+           <widget class="QTableView" name="tableflightsearch">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>20</y>
+              <width>951</width>
+              <height>421</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="btnallflight">
+            <property name="geometry">
+             <rect>
+              <x>407</x>
+              <y>450</y>
+              <width>140</width>
+              <height>42</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>所有航班</string>
+            </property>
+           </widget>
           </widget>
          </item>
          <item>
