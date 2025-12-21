@@ -2,4 +2,6 @@
 
 ```bash
 mysql < init.sql
+
+Get-Content .\init.sql | mysql -u root -p     \\powershell
 ```

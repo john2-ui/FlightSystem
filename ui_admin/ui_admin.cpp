@@ -11,6 +11,7 @@ ui_admin::ui_admin(QWidget *parent)
 {
     ui->setupUi(this);
     ui->mainStackedWidget->setCurrentIndex(0);
+    AddFlightClicked();
 
     // 设置表格样式
     setupTableWidget(ui->updateflightTable);
@@ -168,6 +169,8 @@ void ui_admin::AddFlightClicked() {
     ui->mainStackedWidget->setCurrentWidget(ui->page_addflight);
     loadAirplaneComboBox();
     loadAirportComboBoxes();
+    ui->departTime->setDateTime(QDateTime::currentDateTime().addSecs(3600));
+    ui->arriveTime->setDateTime(QDateTime::currentDateTime().addSecs(7200));
 }
 
 void ui_admin::UpdateFlightClicked() {
@@ -175,13 +178,19 @@ void ui_admin::UpdateFlightClicked() {
     loadAirplaneComboBox();
     loadAirportComboBoxes();
     loadSearchCityComboBoxes(); // 刷新搜索用的城市列表
-    ui->updateflightTable->setRowCount(0);
+    ui->searchUpdateDepartCity->setCurrentIndex(0);
+    ui->searchUpdateArriveCity->setCurrentIndex(1);
+    ui->searchUpdateDate->setDate(QDate::currentDate().addDays(0));
+    on_btn_searchupdateflight_clicked();
 }
 
 void ui_admin::DeleteFlightClicked() {
     ui->mainStackedWidget->setCurrentWidget(ui->page_deleteflight);
     loadSearchCityComboBoxes(); // 刷新搜索用的城市列表
-    ui->deleteflightTable->setRowCount(0);
+    ui->searchDeleteDepartCity->setCurrentIndex(0);
+    ui->searchDeleteArriveCity->setCurrentIndex(1);
+    ui->searchDeleteDate->setDate(QDate::currentDate().addDays(0));
+    on_btn_searchdeleteflight_clicked();
 }
 
 void ui_admin::AddPlaneClicked() {
@@ -318,9 +327,9 @@ void ui_admin::on_btn_addflight_clicked()
     }
 
     QString errorMsg;
-    const double priceEconomy = 0.0;
-    const double priceBusiness = 0.0;
-    const double priceFirst = 0.0;
+    const double priceEconomy = ui->addflighteconomyprice->value();
+    const double priceBusiness = ui->addflightbusinessprice->value();
+    const double priceFirst = ui->addflightfirstprice->value();
     int flightId = Backend::instance().addFlight(
         flightNo,
         airplaneId,
@@ -399,12 +408,6 @@ void ui_admin::on_updateflightTable_cellClicked(int row, int column)
     } else {
         ui->rbtn_scheduled_update->setChecked(true);
     }
-    //设置余票
-    // int tickets=0;
-    // foreach (auto& ticket,flight.tickets) {
-    //     tickets+=ticket.remainSeats;
-    // }
-    // ui->updateflighttickets->setValue(tickets);
 }
 
 void ui_admin::on_btn_updateflight_clicked()
@@ -445,8 +448,10 @@ void ui_admin::on_btn_updateflight_clicked()
     updateflight.setStatus(updateflightstatus);
 
     QString errormsg;
-    constexpr double keepPrice = -1.0; // -1 表示沿用现有票价
-    if (Backend::instance().updateFlight(updateflight, keepPrice, keepPrice, keepPrice, errormsg)) {
+    const double ecoprice=ui->updateflighteconomyprice->value();
+    const double busprice=ui->updateflightbusinessprice->value();
+    const double firprice=ui->updateflightfirstprice->value();
+    if (Backend::instance().updateFlight(updateflight, ecoprice, busprice, firprice, errormsg)) {
         QMessageBox::information(this, "成功", "更新航班成功！");
         on_btn_searchupdateflight_clicked(); // 刷新表格
     } else {
@@ -624,6 +629,12 @@ void ui_admin::on_updateflightID_valueChanged(int arg1)
         ui->rbtn_scheduled_update->setChecked(true);
     }
     ui->updateflightplane->setCurrentIndex(ui->updateflightplane->findText(updateflight.airplaneModel,Qt::MatchContains));
+    double ecoprice=updateflight.tickets.find("economy").value().price;
+    double busprice=updateflight.tickets.find("business").value().price;
+    double firprice=updateflight.tickets.find("first").value().price;
+    ui->updateflighteconomyprice->setValue(ecoprice);
+    ui->updateflightbusinessprice->setValue(busprice);
+    ui->updateflightfirstprice->setValue(firprice);
 }
 
 void ui_admin::on_deleteflightID_valueChanged(int arg1)
