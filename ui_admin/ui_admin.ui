@@ -195,33 +195,6 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
            <property name="spacing">
             <number>15</number>
            </property>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_16">
-             <property name="text">
-              <string>航班编号:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="flightNo">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="placeholderText">
-              <string>例如: CA1234</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QLabel" name="label_17">
-             <property name="text">
-              <string>值班飞机:</string>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="3">
             <widget class="QComboBox" name="airplane"/>
            </item>
@@ -232,18 +205,15 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QComboBox" name="departAirport"/>
-           </item>
-           <item row="1" column="2">
-            <widget class="QLabel" name="label_19">
-             <property name="text">
-              <string>到达机场:</string>
+           <item row="2" column="3">
+            <widget class="QDateTimeEdit" name="arriveTime">
+             <property name="displayFormat">
+              <string>yyyy-MM-dd HH:mm</string>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
              </property>
             </widget>
-           </item>
-           <item row="1" column="3">
-            <widget class="QComboBox" name="arriveAirport"/>
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="label_22">
@@ -251,6 +221,26 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
               <string>出发时间:</string>
              </property>
             </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_16">
+             <property name="text">
+              <string>航班编号:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label_17">
+             <property name="text">
+              <string>值班飞机:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QComboBox" name="arriveAirport"/>
+           </item>
+           <item row="1" column="1">
+            <widget class="QComboBox" name="departAirport"/>
            </item>
            <item row="2" column="1">
             <widget class="QDateTimeEdit" name="departTime">
@@ -269,13 +259,74 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="3">
-            <widget class="QDateTimeEdit" name="arriveTime">
-             <property name="displayFormat">
-              <string>yyyy-MM-dd HH:mm</string>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="flightNo">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
-             <property name="calendarPopup">
-              <bool>true</bool>
+             <property name="placeholderText">
+              <string>例如: CA1234</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLabel" name="label_19">
+             <property name="text">
+              <string>到达机场:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_53">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>经济/商务/头等舱票价：</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QSpinBox" name="addflighteconomyprice">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximum">
+              <number>9999</number>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QSpinBox" name="addflightbusinessprice">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximum">
+              <number>9999</number>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="3">
+            <widget class="QSpinBox" name="addflightfirstprice">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximum">
+              <number>9999</number>
              </property>
             </widget>
            </item>
@@ -401,16 +452,22 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
          <number>30</number>
         </property>
         <property name="topMargin">
-         <number>30</number>
+         <number>10</number>
         </property>
         <property name="rightMargin">
          <number>30</number>
         </property>
         <property name="bottomMargin">
-         <number>30</number>
+         <number>10</number>
         </property>
         <item>
          <widget class="QLabel" name="label_29">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="styleSheet">
            <string notr="true">font-size: 18pt;
 font-weight: bold; color: #2c3e50; padding: 10px;</string>
@@ -425,6 +482,12 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
         </item>
         <item>
          <widget class="QGroupBox" name="groupBox_3">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="title">
            <string>搜索航班</string>
           </property>
@@ -491,6 +554,12 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
         </item>
         <item>
          <widget class="QGroupBox" name="groupBox_4">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="title">
            <string>编辑航班</string>
           </property>
@@ -498,10 +567,97 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
            <property name="spacing">
             <number>15</number>
            </property>
+           <item row="6" column="2">
+            <widget class="QRadioButton" name="rbtn_scheduled_update">
+             <property name="text">
+              <string>已排班</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">btng_updatestatus</string>
+             </attribute>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_31">
+             <property name="text">
+              <string>值班飞机:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QDateTimeEdit" name="updateflightdeparttime">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="displayFormat">
+              <string>yyyy-MM-dd HH:mm</string>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_34">
+             <property name="text">
+              <string>起飞时间:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="QRadioButton" name="rbtn_cancelled_update">
+             <property name="text">
+              <string>取消</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">btng_updatestatus</string>
+             </attribute>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label_37">
+             <property name="text">
+              <string>航班编号:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="3">
+            <widget class="QDateTimeEdit" name="updateflightarrivetime">
+             <property name="displayFormat">
+              <string>yyyy-MM-dd HH:mm</string>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="0">
             <widget class="QLabel" name="label_30">
              <property name="text">
               <string>航班ID:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QComboBox" name="updateflightplane"/>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_36">
+             <property name="text">
+              <string>航班状态:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QLineEdit" name="updateflightNo">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
             </widget>
            </item>
@@ -518,37 +674,30 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="2">
-            <widget class="QLabel" name="label_37">
-             <property name="text">
-              <string>航班编号:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="3">
-            <widget class="QLineEdit" name="updateflightNo">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_31">
-             <property name="text">
-              <string>值班飞机:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QComboBox" name="updateflightplane"/>
+           <item row="2" column="3">
+            <widget class="QComboBox" name="updateflightarriveairport"/>
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="label_32">
              <property name="text">
               <string>起飞机场:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="2">
+            <widget class="QRadioButton" name="rbtn_delayed_update">
+             <property name="text">
+              <string>延误</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">btng_updatestatus</string>
+             </attribute>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QLabel" name="label_35">
+             <property name="text">
+              <string>到达时间:</string>
              </property>
             </widget>
            </item>
@@ -562,51 +711,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="3">
-            <widget class="QComboBox" name="updateflightarriveairport"/>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_34">
-             <property name="text">
-              <string>起飞时间:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QDateTimeEdit" name="updateflightdeparttime">
-             <property name="displayFormat">
-              <string>yyyy-MM-dd HH:mm</string>
-             </property>
-             <property name="calendarPopup">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="2">
-            <widget class="QLabel" name="label_35">
-             <property name="text">
-              <string>到达时间:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="3">
-            <widget class="QDateTimeEdit" name="updateflightarrivetime">
-             <property name="displayFormat">
-              <string>yyyy-MM-dd HH:mm</string>
-             </property>
-             <property name="calendarPopup">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_36">
-             <property name="text">
-              <string>航班状态:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
+           <item row="5" column="1">
             <widget class="QRadioButton" name="rbtn_normal_update">
              <property name="text">
               <string>正常</string>
@@ -616,34 +721,55 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
              </attribute>
             </widget>
            </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_52">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>经济/商务/头等舱票价：</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QSpinBox" name="updateflighteconomyprice">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximum">
+              <number>9999</number>
+             </property>
+            </widget>
+           </item>
            <item row="4" column="2">
-            <widget class="QRadioButton" name="rbtn_delayed_update">
-             <property name="text">
-              <string>延误</string>
+            <widget class="QSpinBox" name="updateflightbusinessprice">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
-             <attribute name="buttonGroup">
-              <string notr="true">btng_updatestatus</string>
-             </attribute>
+             <property name="maximum">
+              <number>9999</number>
+             </property>
             </widget>
            </item>
-           <item row="5" column="1">
-            <widget class="QRadioButton" name="rbtn_cancelled_update">
-             <property name="text">
-              <string>取消</string>
+           <item row="4" column="3">
+            <widget class="QSpinBox" name="updateflightfirstprice">
+             <property name="maximum">
+              <number>9999</number>
              </property>
-             <attribute name="buttonGroup">
-              <string notr="true">btng_updatestatus</string>
-             </attribute>
-            </widget>
-           </item>
-           <item row="5" column="2">
-            <widget class="QRadioButton" name="rbtn_scheduled_update">
-             <property name="text">
-              <string>已排班</string>
-             </property>
-             <attribute name="buttonGroup">
-              <string notr="true">btng_updatestatus</string>
-             </attribute>
             </widget>
            </item>
           </layout>
