@@ -1,29 +1,20 @@
 -- ==========================================
--- 插入测试数据 (Enhanced Version)
--- 适用：Backend 功能测试
--- 特性：时间自动推算为未来时间，数据量更大
+-- 最终优化版：基于机型容量的自动化数据生成
+-- 特性：容量对齐、15架飞机多样性、高密度航班
 -- ==========================================
 
 USE flightsystem;
--- 数据库字符集
-ALTER DATABASE flightsystem CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
--- 表字符集
-ALTER TABLE city CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-ALTER TABLE airport CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-ALTER TABLE airplane CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-ALTER TABLE flight CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-ALTER TABLE ticket CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- 1. 清空现有数据
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE ticket;
+TRUNCATE TABLE flight;
+TRUNCATE TABLE airplane;
+TRUNCATE TABLE airport;
+TRUNCATE TABLE city;
+SET FOREIGN_KEY_CHECKS = 1;
 
-
--- 1. 清空现有数据（按外键依赖顺序删除）
-DELETE FROM ticket;
-DELETE FROM flight;
-DELETE FROM airplane;
-DELETE FROM airport;
-DELETE FROM city;
-
--- 2. 重置自增ID (确保ID从1开始，方便调试)
+-- 2. 重置自增ID
 ALTER TABLE ticket AUTO_INCREMENT = 1;
 ALTER TABLE flight AUTO_INCREMENT = 1;
 ALTER TABLE airplane AUTO_INCREMENT = 1;
@@ -31,142 +22,90 @@ ALTER TABLE airport AUTO_INCREMENT = 1;
 ALTER TABLE city AUTO_INCREMENT = 1;
 
 -- ==========================================
--- 1. 插入城市数据
+-- 1. 插入核心城市
 -- ==========================================
 INSERT INTO city (name, code, country) VALUES
-('广州', 'GZ', '中国'),    
-('北京', 'BJ', '中国'),    
-('上海', 'SH', '中国'),    
-('深圳', 'SZ', '中国'),    
-('成都', 'CD', '中国'),    
-('杭州', 'HGH', '中国'),   
-('西安', 'XIY', '中国'),   
-('武汉', 'WUH', '中国'),   
-('长沙', 'CSX', '中国');   
+('北京', 'BJ', '中国'), ('上海', 'SH', '中国'), 
+('广州', 'GZ', '中国'), ('深圳', 'SZ', '中国'), 
+('成都', 'CD', '中国'), ('杭州', 'HGH', '中国'), 
+('昆明', 'KMG', '中国'), ('西安', 'XIY', '中国');
 
 -- ==========================================
--- 2. 插入机场数据
+-- 2. 插入核心机场
 -- ==========================================
 INSERT INTO airport (name, code, city_id, terminal_count) VALUES
-('广州白云国际机场', 'CAN', 1, 2), 
-('北京首都国际机场', 'PEK', 2, 3), 
-('北京大兴国际机场', 'PKX', 2, 1), 
-('上海浦东国际机场', 'PVG', 3, 2), 
-('上海虹桥国际机场', 'SHA', 3, 2), 
-('深圳宝安国际机场', 'SZX', 4, 1), 
-('成都双流国际机场', 'CTU', 5, 2), 
-('成都天府国际机场', 'TFU', 5, 2), 
-('杭州萧山国际机场', 'HGH', 6, 3), 
-('西安咸阳国际机场', 'XIY', 7, 3), 
-('武汉天河国际机场', 'WUH', 8, 2), 
-('长沙黄花国际机场', 'CSX', 9, 2);
+('北京首都国际机场', 'PEK', 1, 3), ('上海浦东国际机场', 'PVG', 2, 2), 
+('广州白云国际机场', 'CAN', 3, 2), ('深圳宝安国际机场', 'SZX', 4, 1), 
+('成都天府国际机场', 'TFU', 5, 2), ('杭州萧山国际机场', 'HGH', 6, 3), 
+('昆明长水国际机场', 'KMG', 7, 1), ('西安咸阳国际机场', 'XIY', 8, 3);
 
 -- ==========================================
--- 3. 插入飞机数据
+-- 3. 扩展飞机数据 (增加至15架，涵盖大中小型号)
 -- ==========================================
 INSERT INTO airplane (model, seats_economy, seats_business, seats_first) VALUES
-('A320', 150, 20, 10),
-('A330', 250, 36, 12),
-('B737', 160, 18, 8),
-('B777', 300, 42, 14),
-('A350', 260, 36, 20),
-('C919', 158, 8, 0),
-('B787', 240, 30, 10),
-('A380', 400, 70, 14),
-('ARJ21', 90, 0, 0);
+('A320neo', 150, 20, 8),   ('A330-300', 260, 30, 12), ('B737-800', 162, 12, 0),
+('B777-300ER', 310, 42, 16), ('A350-900', 280, 36, 12), ('C919', 158, 8, 0),
+('B787-9', 250, 35, 10),    ('A380-800', 420, 80, 20), ('ARJ21-700', 90, 0, 0),
+('B747-8', 340, 50, 20),    ('CRJ900', 78, 6, 0),      ('A321neo', 180, 24, 12),
+('B737-MAX8', 170, 16, 0),  ('A330-900', 280, 30, 10), ('E190', 98, 8, 0);
 
 -- ==========================================
--- 4. 插入固定航班数据
+-- 4. 自动化航班与动态机票生成存储过程
 -- ==========================================
--- 注意：使用 TIMESTAMP(DATE_ADD(...), 'HH:MM:SS') 修正时间
-
-INSERT INTO flight (flight_no, airplane_id, depart_airport_id, arrive_airport_id, depart_time, arrive_time, status) VALUES
-('CZ3101', 1, 1, 2, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '08:00:00'), TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '11:00:00'), 'normal'),
-('CZ3102', 1, 2, 1, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '14:00:00'), TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '17:00:00'), 'normal'),
-('MU9191', 6, 5, 6, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '09:00:00'), TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '11:30:00'), 'normal'),
-('MU9192', 6, 6, 5, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '13:00:00'), TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '15:30:00'), 'delayed'),
-('CA1701', 5, 9, 2, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '07:30:00'), TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '09:40:00'), 'normal'),
-('CA1702', 5, 2, 9, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '11:00:00'), TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '13:10:00'), 'normal'),
-('CZ3403', 7, 1, 8, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '10:00:00'), TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '12:45:00'), 'normal'),
-('HU7801', 3, 10, 11, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 3 DAY), '08:00:00'), TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 3 DAY), '09:30:00'), 'normal'),
-('CZ3988', 2, 12, 4, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 3 DAY), '15:00:00'), TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 3 DAY), '17:00:00'), 'cancelled'),
-('CZ3555', 4, 1, 5, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 7 DAY), '09:00:00'), TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 7 DAY), '11:15:00'), 'normal'),
-('CZ3556', 4, 5, 1, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 7 DAY), '13:00:00'), TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 7 DAY), '15:15:00'), 'normal'),
-('KN5858', 3, 3, 6, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 7 DAY), '22:00:00'), TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 8 DAY), '01:10:00'), 'normal');
-
--- ==========================================
--- 5. 插入机票数据
--- ==========================================
-INSERT INTO ticket (flight_id, class, price, total_seats, remain_seats) VALUES
-(1, 'economy', 899.00, 150, 2), (1, 'business', 1999.00, 20, 15), (1, 'first', 3999.00, 10, 8),
-(2, 'economy', 950.00, 150, 130), (2, 'business', 2100.00, 20, 18), (2, 'first', 4200.00, 10, 10),
-(3, 'economy', 650.00, 158, 100), (3, 'business', 1200.00, 8, 2),
-(4, 'economy', 650.00, 158, 158), (4, 'business', 1200.00, 8, 8),
-(5, 'economy', 1100.00, 260, 200), (5, 'business', 2500.00, 36, 30), (5, 'first', 5800.00, 20, 18),
-(6, 'economy', 1100.00, 260, 210), (6, 'business', 2500.00, 36, 32), (6, 'first', 5800.00, 20, 20),
-(7, 'economy', 920.00, 240, 180), (7, 'business', 1800.00, 30, 15), (7, 'first', 3200.00, 10, 5),
-(8, 'economy', 450.00, 160, 80), (8, 'business', 900.00, 18, 10), (8, 'first', 1500.00, 8, 4),
-(9, 'economy', 600.00, 250, 250), (9, 'business', 1200.00, 36, 36), (9, 'first', 2000.00, 12, 12);
-
--- ==========================================
--- 6. 扩展国际城市及机场
--- ==========================================
-INSERT INTO city (name, code, country) VALUES
-('昆明', 'KMG', '中国'), ('厦门', 'XMN', '中国'),
-('东京', 'TYO', '日本'), ('首尔', 'SEL', '韩国'), ('新加坡', 'SIN', '新加坡'),
-('伦敦', 'LON', '英国'), ('纽约', 'NYC', '美国');
-
-INSERT INTO airport (name, code, city_id, terminal_count) VALUES
-('昆明长水国际机场', 'KMG', 10, 1), ('厦门高崎国际机场', 'XMN', 11, 2),
-('东京成田国际机场', 'NRT', 12, 3), ('东京羽田国际机场', 'HND', 12, 3),
-('首尔仁川国际机场', 'ICN', 13, 2), ('新加坡樟宜机场', 'SIN', 14, 4),
-('伦敦希思罗机场', 'LHR', 15, 5), ('纽约肯尼迪国际机场', 'JFK', 16, 6);
-
--- ==========================================
--- 7. 批量随机航班生成存储过程
--- ==========================================
-DROP PROCEDURE IF EXISTS GenerateMassiveData;
+DROP PROCEDURE IF EXISTS GenerateSmartData;
 DELIMITER $$
-CREATE PROCEDURE GenerateMassiveData()
+CREATE PROCEDURE GenerateSmartData()
 BEGIN
     DECLARE i INT DEFAULT 1;
-    DECLARE v_depart_id INT;
-    DECLARE v_arrive_id INT;
-    DECLARE v_airplane_id INT;
+    DECLARE v_depart_id, v_arrive_id, v_airplane_id, v_flight_id INT;
+    DECLARE v_base_date DATETIME DEFAULT '2025-12-23 00:00:00';
     DECLARE v_depart_time DATETIME;
-    DECLARE v_flight_id INT;
+    
+    -- 用于读取飞机容量的变量
+    DECLARE v_cap_economy, v_cap_business, v_cap_first INT;
 
     WHILE i <= 500 DO
-        SET v_depart_id = FLOOR(RAND()*20)+1;
-
+        -- 1. 随机基础信息
+        SET v_depart_id = FLOOR(1 + RAND() * 8);
         REPEAT
-            SET v_arrive_id = FLOOR(RAND()*20)+1;
+            SET v_arrive_id = FLOOR(1 + RAND() * 8);
         UNTIL v_arrive_id != v_depart_id END REPEAT;
 
-        SET v_airplane_id = FLOOR(RAND()*9)+1;
-        SET v_depart_time = DATE_ADD(NOW(), INTERVAL FLOOR(RAND()*30*24*60) MINUTE);
+        SET v_airplane_id = FLOOR(1 + RAND() * 15);
+        SET v_depart_time = DATE_ADD(v_base_date, INTERVAL FLOOR(RAND() * 21600) MINUTE);
 
+        -- 2. 插入航班
         INSERT INTO flight (flight_no, airplane_id, depart_airport_id, arrive_airport_id, depart_time, arrive_time, status)
         VALUES (
-            CONCAT('RND', LPAD(i,4,'0')),
-            v_airplane_id,
-            v_depart_id,
-            v_arrive_id,
-            v_depart_time,
-            DATE_ADD(v_depart_time, INTERVAL FLOOR(120 + RAND()*180) MINUTE),
+            CONCAT(ELT(FLOOR(1 + RAND() * 5), 'CA', 'MU', 'CZ', 'HU', 'MF'), LPAD(i, 4, '0')),
+            v_airplane_id, v_depart_id, v_arrive_id, v_depart_time,
+            DATE_ADD(v_depart_time, INTERVAL FLOOR(100 + RAND() * 150) MINUTE),
             'normal'
         );
-
         SET v_flight_id = LAST_INSERT_ID();
 
-        -- 经济舱
-        INSERT INTO ticket (flight_id, class, price, total_seats, remain_seats)
-        VALUES (v_flight_id, 'economy', FLOOR(500 + RAND()*1000), 150, LEAST(FLOOR(RAND()*150), 150));
+        -- 3. 获取该航班所用飞机的座位配置
+        SELECT seats_economy, seats_business, seats_first 
+        INTO v_cap_economy, v_cap_business, v_cap_first
+        FROM airplane WHERE id = v_airplane_id;
 
-        -- 商务舱
-        IF RAND() > 0.3 THEN
+        -- 4. 根据飞机配置动态生成机票
+        -- 经济舱 (始终生成)
+        IF v_cap_economy > 0 THEN
             INSERT INTO ticket (flight_id, class, price, total_seats, remain_seats)
-            VALUES (v_flight_id, 'business', FLOOR(1500 + RAND()*2000), 20, LEAST(FLOOR(RAND()*20), 20));
+            VALUES (v_flight_id, 'economy', FLOOR(400 + RAND()*800), v_cap_economy, FLOOR(RAND() * v_cap_economy));
+        END IF;
+
+        -- 商务舱 (仅当飞机有配置时生成)
+        IF v_cap_business > 0 THEN
+            INSERT INTO ticket (flight_id, class, price, total_seats, remain_seats)
+            VALUES (v_flight_id, 'business', FLOOR(1500 + RAND()*1500), v_cap_business, FLOOR(RAND() * v_cap_business));
+        END IF;
+
+        -- 头等舱 (仅当飞机有配置时生成)
+        IF v_cap_first > 0 THEN
+            INSERT INTO ticket (flight_id, class, price, total_seats, remain_seats)
+            VALUES (v_flight_id, 'first', FLOOR(3500 + RAND()*3000), v_cap_first, FLOOR(RAND() * v_cap_first));
         END IF;
 
         SET i = i + 1;
@@ -174,7 +113,5 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ==========================================
--- 8. 执行随机航班生成
--- ==========================================
-CALL GenerateMassiveData();
+-- 5. 执行生成
+CALL GenerateSmartData();
