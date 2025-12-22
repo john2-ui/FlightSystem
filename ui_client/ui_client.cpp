@@ -681,12 +681,14 @@ void ui_client::displayFlightDetail(int flightId)
     selectedFlightId = flightId;
     resetBookingInfo();
     FlightDetailInfo flight = Backend::instance().getFlightDetail(flightId);
+    QString statusText= translateStatus(flight.status);
     if (flight.flightId == 0) {
         QMessageBox::warning(this, "错误", "航班不存在或已取消");
         return;
     }
     ui->labelFlightNo->setText(flight.flightNo);
-    ui->labelStatus->setText(flight.status);
+    //ui->labelStatus->setText(flight.status);
+    ui->labelStatus->setText(statusText);
     QString statusColor = "#4CAF50"; // 绿色
     if (flight.status.contains("延误")) statusColor = "#FF9800"; // 橙色
     if (flight.status.contains("取消")) statusColor = "#F44336"; // 红色
@@ -713,11 +715,12 @@ void ui_client::displayFlightDetail(int flightId)
 void ui_client::fillTicketTable(const QMap<QString, TicketInfo>& tickets)
 {
     ui->tableTickets->setRowCount(tickets.size());
+    //QString statusClass= translateClass(tickets.class);
 
     int row = 0;
     for (auto it = tickets.begin(); it != tickets.end(); ++it) {
         const TicketInfo& ticket = it.value();
-        QTableWidgetItem* itemClass = new QTableWidgetItem(ticket.ticketClass);
+        QTableWidgetItem* itemClass = new QTableWidgetItem(translateClass(ticket.ticketClass));
         itemClass->setTextAlignment(Qt::AlignCenter);
         ui->tableTickets->setItem(row, 0, itemClass);
         QTableWidgetItem* itemTotal = new QTableWidgetItem(QString::number(ticket.totalSeats));
@@ -821,12 +824,19 @@ void ui_client::updateSeatSelectionUI()
                                          ? QString("余票: %1张").arg(tickets["economy"].remainSeats)
                                          : "已售罄");
     }
-
+    else{
+        ui->radioEconomy->setEnabled(false);
+        ui->radioEconomy->setToolTip("本航班无经济舱设置");
+    }
     if (tickets.contains("business")) {
         ui->radioBusiness->setEnabled(tickets["business"].remainSeats > 0);
         ui->radioBusiness->setToolTip(tickets["business"].remainSeats > 0
                                           ? QString("余票: %1张").arg(tickets["business"].remainSeats)
                                           : "已售罄");
+    }
+    else{
+        ui->radioBusiness->setEnabled(false);
+        ui->radioBusiness->setToolTip("本航班无商务舱设置");
     }
 
     if (tickets.contains("first")) {
@@ -834,6 +844,10 @@ void ui_client::updateSeatSelectionUI()
         ui->radioFirst->setToolTip(tickets["first"].remainSeats > 0
                                        ? QString("余票: %1张").arg(tickets["first"].remainSeats)
                                        : "已售罄");
+    }
+    else{
+        ui->radioFirst->setEnabled(false);
+        ui->radioFirst->setToolTip("本航班无头等舱设置");
     }
     bool hasAvailable = false;
     for (const TicketInfo& ticket : tickets.values()) {
@@ -920,7 +934,7 @@ void ui_client::on_btnConfirmBook_clicked()
                            "价格：¥%3\n\n"
                            "确认支付吗？")
                        .arg(ui->labelFlightNo->text())
-                       .arg(currentTicketClass)
+                       .arg(translateClass(currentTicketClass))
                        .arg(currentTicketPrice));
     msgBox.setIcon(QMessageBox::Question);
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
@@ -947,7 +961,7 @@ void ui_client::on_btnConfirmBook_clicked()
                                          "舱位：%2\n"
                                          "价格：¥%3")
                                      .arg(ui->labelFlightNo->text())
-                                     .arg(currentTicketClass)
+                                     .arg(translateClass(currentTicketClass))
                                      .arg(currentTicketPrice));
 
         displayFlightDetail(selectedFlightId);
@@ -1269,6 +1283,15 @@ QString ui_client::translateStatus(const QString& status)
     return status;
 }
 
+QString ui_client::translateClass(const QString& flightclass)
+{
+    if (flightclass.toLower() == "economy") return "经济舱";
+    if (flightclass.toLower() == "business") return "商务舱";
+    if (flightclass.toLower() == "first")
+        return "头等舱";
+    return flightclass;
+}
+
 // 获取状态颜色
 QString ui_client::getStatusColor(const QString& status)
 {
@@ -1483,59 +1506,72 @@ void ui_client::on_btnExit_clicked()
 
 void ui_client::initFlightTableView()
 {
-    // 设置列数和列头（与原有功能一致，共7列）
     QStringList headers = {"航班号", "机型", "出发机场", "到达机场", "出发时间", "到达时间", "状态"};
     flightModel->setColumnCount(7);
     flightModel->setHorizontalHeaderLabels(headers);
-    // 将模型绑定到QTableView
     ui->tableflightsearch->setModel(flightModel);
-    // 实现列等宽（与原有逻辑一致）
     ui->tableflightsearch->horizontalHeader()->setStretchLastSection(false);
     ui->tableflightsearch->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch); // 等宽关键
     ui->tableflightsearch->setAlternatingRowColors(true);
+    ui->tableflightsearch->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->tableflightsearch->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->tableflightsearch->setStyleSheet(
+        "QTableView::item:hover { background-color: #ADD8E6; color: black; }"
+        "QTableView::item:selected { background-color: #ADD8E6; color: black; }"
+        );
+    connect(ui->tableflightsearch, &QTableView::doubleClicked, this, &ui_client::onFlightNoClicked);
 }
 
-// 修改：将航班数据填充到QTableView（原QTableWidget逻辑迁移）
+// 将航班数据填充到QTableView
 void ui_client::displayFlightsToTable(const QList<FlightDetailInfo>& flightList)
 {
-    // 清空模型数据（替代原setRowCount(0)）
     flightModel->setRowCount(0);
-
-    // 按出发时间排序（原有逻辑不变）
     QList<FlightDetailInfo> sortedFlights = flightList;
     std::sort(sortedFlights.begin(), sortedFlights.end(),
               [](const FlightDetailInfo& a, const FlightDetailInfo& b) {
                   return a.departTime < b.departTime;
               });
-
-    // 遍历航班数据填充模型
     for (const auto& flight : sortedFlights) {
         QList<QStandardItem*> rowItems;
 
-        // 1. 航班号
+        QStandardItem* flightNoItem = new QStandardItem(flight.flightNo);
+
         rowItems.append(new QStandardItem(flight.flightNo));
-        // 2. 飞机机型
         QString planeModel = flight.airplaneModel.isEmpty() ? "未知机型" : flight.airplaneModel;
         rowItems.append(new QStandardItem(planeModel));
-        // 3. 出发机场
         rowItems.append(new QStandardItem(flight.departAirportName));
-        // 4. 到达机场
         rowItems.append(new QStandardItem(flight.arriveAirportName));
-        // 5. 出发时间
         rowItems.append(new QStandardItem(flight.departTime.toString("yyyy-MM-dd hh:mm")));
-        // 6. 到达时间
         rowItems.append(new QStandardItem(flight.arriveTime.toString("yyyy-MM-dd hh:mm")));
-        // 7. 状态（设置文字颜色）
         QString statusText = translateStatus(flight.status);
         QStandardItem* statusItem = new QStandardItem(statusText);
         QString statusColor = getStatusColor(flight.status);
         statusItem->setForeground(QColor(statusColor));
         rowItems.append(statusItem);
-
-        // 将行数据添加到模型
         flightModel->appendRow(rowItems);
     }
 }
+void ui_client::onFlightNoClicked(const QModelIndex& index)
+{
+    if (index.column() != 0) {
+        return;
+    }
+    QString flightNo = index.data().toString();
+    int targetFlightId = 0;
+    for (const auto& flight : currentFlightList) {
+        if (flight.flightNo == flightNo) {
+            targetFlightId = flight.flightId;
+            break;
+        }
+    }
+    if (targetFlightId == 0) {
+        QMessageBox::warning(this, "错误", "未找到该航班的ID");
+        return;
+    }
+    displayFlightDetail(targetFlightId);
+}
+
+
 
 void ui_client::loadAllFlightsToTable()
 {
