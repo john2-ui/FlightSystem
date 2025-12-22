@@ -561,10 +561,32 @@ bool Backend::updateFlight(
 }
 
 bool Backend::deleteFlight(int flightId, QString& errorMsg) {
+    QSqlDatabase db = DBManager::instance().db();
+    if (!db.transaction()) {
+        errorMsg = "无法开启事务";
+        return false;
+    }
+
+    // 1. 先删除关联的机票（解决外键约束）
+    if (!ticketDao->removeByFlightId(flightId)) {
+        db.rollback();
+        errorMsg = "删除关联机票失败";
+        return false;
+    }
+
+    // 2. 再删除航班
     if (!flightDao->remove(flightId)) {
+        db.rollback();
         errorMsg = "删除航班失败";
         return false;
     }
+
+    if (!db.commit()) {
+        db.rollback();
+        errorMsg = "提交事务失败";
+        return false;
+    }
+
     return true;
 }
 
