@@ -30,8 +30,8 @@ DBManager::DBManager() {
            << "database:" << database;
 
 
- //m_db = QSqlDatabase::addDatabase("QMYSQL");
-   m_db = QSqlDatabase::addDatabase("QODBC");
+  m_db = QSqlDatabase::addDatabase("QMYSQL");
+//m_db = QSqlDatabase::addDatabase("QODBC");
   m_db.setHostName(host);
   m_db.setPort(port);
   m_db.setUserName(user);

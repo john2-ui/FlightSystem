@@ -9,8 +9,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     // 1. 添加 MySQL 数据库驱动
-    //QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-     QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
+    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
+    //QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
     db.setHostName("localhost");      // MySQL 服务器地址
     db.setPort(3306);                 // MySQL 端口
     db.setDatabaseName("flightsystem");     // 数据库名称
