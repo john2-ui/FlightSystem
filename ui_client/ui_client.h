@@ -61,6 +61,7 @@ private slots:
     void on_btnDeleteAccount_clicked();
 
     void on_btnallflight_clicked();
+    void onFlightNoClicked(const QModelIndex& index);
 
 private:
     Ui::ui_client *ui;
@@ -118,6 +119,7 @@ private:
     void loadAllFlightsToTable();
     void displayFlightsToTable(const QList<FlightDetailInfo>& flightList);
     void initFlightTableView();
+    QString translateClass(const QString& flightclass);
 };
 
 #endif // UI_CLIENT_H
