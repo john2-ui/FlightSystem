@@ -64,6 +64,10 @@ private slots:
     void on_deleteplaneID_valueChanged(int arg1);
     void on_btn_deleteplane_clicked();
 
+    void on_airplane_currentIndexChanged(int index);
+
+    void on_updateflightplane_currentIndexChanged(int index);
+
 private:
     Ui::ui_admin *ui;
     MainWindow* mainUI=nullptr;

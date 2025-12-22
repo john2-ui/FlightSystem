@@ -658,3 +658,34 @@ void ui_admin::ReturnLogin(){
     mainUI->show();
     this->close();
 }
+
+void ui_admin::on_airplane_currentIndexChanged(int index)
+{
+    ui->addflightbusinessprice->setEnabled(true);
+    ui->addflightfirstprice->setEnabled(true);
+    Airplane plane=Backend::instance().getAirplaneById(index+1);
+    if (plane.seatsBusiness()==0) {
+        ui->addflightbusinessprice->setValue(0);
+        ui->addflightbusinessprice->setEnabled(false);
+    }
+    if (plane.seatsFirst()==0) {
+        ui->addflightfirstprice->setValue(0);
+        ui->addflightfirstprice->setEnabled(false);
+    }
+}
+
+void ui_admin::on_updateflightplane_currentIndexChanged(int index)
+{
+    ui->updateflightbusinessprice->setEnabled(true);
+    ui->updateflightfirstprice->setEnabled(true);
+    Airplane plane=Backend::instance().getAirplaneById(index+1);
+    if (plane.seatsBusiness()==0) {
+        ui->updateflightbusinessprice->setValue(0);
+        ui->updateflightbusinessprice->setEnabled(false);
+    }
+    if (plane.seatsFirst()==0) {
+        ui->updateflightfirstprice->setValue(0);
+        ui->updateflightfirstprice->setEnabled(false);
+    }
+}
+
