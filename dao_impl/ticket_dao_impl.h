@@ -10,6 +10,7 @@ public:
     int insert(const Ticket& ticket) override;
     bool update(const Ticket& ticket) override;
     bool remove(int id) override;
+    bool removeByFlightId(int flightId) override;
     Ticket getById(int id) override;
     QList<Ticket> getAll() override;
 

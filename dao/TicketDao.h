@@ -10,6 +10,7 @@ public:
     virtual int insert(const Ticket& ticket) = 0;
     virtual bool update(const Ticket& ticket) = 0;
     virtual bool remove(int id) = 0;
+    virtual bool removeByFlightId(int flightId) = 0;
     virtual Ticket getById(int id) = 0;
     virtual QList<Ticket> getAll() = 0;
 };

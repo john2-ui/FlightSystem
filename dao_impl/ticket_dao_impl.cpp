@@ -43,6 +43,13 @@ bool TicketDaoImpl::remove(int id) {
     return query.exec();
 }
 
+bool TicketDaoImpl::removeByFlightId(int flightId) {
+    QSqlQuery query(m_db);
+    query.prepare("DELETE FROM ticket WHERE flight_id=:flight_id");
+    query.bindValue(":flight_id", flightId);
+    return query.exec();
+}
+
 Ticket TicketDaoImpl::getById(int id) {
     QSqlQuery query(m_db);
     query.prepare("SELECT id, flight_id, class, price, total_seats, remain_seats FROM ticket WHERE id=:id");
