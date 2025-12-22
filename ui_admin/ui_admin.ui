@@ -1984,7 +1984,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="btng_status"/>
   <buttongroup name="btng_updatestatus"/>
+  <buttongroup name="btng_status"/>
  </buttongroups>
 </ui>
