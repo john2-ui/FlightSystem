@@ -134,7 +134,7 @@ QGroupBox::title {
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>8</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="first_page">
        <widget class="QWidget" name="horizontalLayoutWidget">
@@ -1376,7 +1376,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
                   </size>
                  </property>
                  <property name="text">
-                  <string>北京→上海</string>
+                  <string>（未选择）→（未选择）</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -1402,7 +1402,7 @@ font-weight: bold; color: #2c3e50; padding: 10px;</string>
                   </size>
                  </property>
                  <property name="text">
-                  <string>2025-01-15</string>
+                  <string>未选择</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignmentFlag::AlignCenter</set>
