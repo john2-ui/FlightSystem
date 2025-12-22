@@ -136,7 +136,7 @@ BEGIN
     DECLARE v_depart_time DATETIME;
     DECLARE v_flight_id INT;
 
-    WHILE i <= 10000 DO
+    WHILE i <= 500 DO
         SET v_depart_id = FLOOR(RAND()*20)+1;
 
         REPEAT
